@@ -4,8 +4,10 @@ import openai
 import pandas as pd
 import numpy as np
 
-from config import TEXT_EMBEDDING_CHUNK_SIZE, EMBEDDINGS_MODEL
+from config import TEXT_EMBEDDING_CHUNK_SIZE, EMBEDDINGS_MODEL, OPENAI_API_KEY
 from database import load_vectors
+
+openai.api_key = OPENAI_API_KEY
 
 def get_col_average_from_list_of_lists(list_of_lists):
     """Return the average of each column in a list of lists."""
