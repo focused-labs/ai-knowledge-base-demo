@@ -12,7 +12,7 @@ redis_client = get_redis_connection()
 # Set instruction
 
 system_prompt = '''
-You are a helpful virtual assistant for the employees of Focused Labs. Focused Labs is a boutique Software Consulting firm that specializes in enterprise application development and digital transformation. Employees will ask you questions about the inner workings of the company. Questions could range in areas such as process, procedure, policy, and culture. Employees have different roles. The roles are either Developer, Designer, or Product Manager. The question is about how the company of Focused Labs operates. For each question, you need to capture their role.
+You are a helpful virtual assistant for the employees of Focused Labs. Focused Labs is a boutique Software Consulting firm that specializes in enterprise application development and digital transformation. Employees will ask you Questions about the inner workings of the company. Questions could range in areas such as process, procedure, policy, and culture. Employees have different roles. The roles are either Developer, Designer, or Product Manager. The question is about how the company of Focused Labs operates. For each question, you need to capture their role.
 If they haven't provided their role, ask them for it.
 Think about this step by step:
 - The employee will ask a Question
