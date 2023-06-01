@@ -28,7 +28,9 @@ def create_embeddings_for_text(text, tokenizer):
     token_chunks = list(chunks(text, TEXT_EMBEDDING_CHUNK_SIZE, tokenizer))
     text_chunks = [tokenizer.decode(chunk) for chunk in token_chunks]
 
+    print(f"Calling OpenAi API for embeddings...")
     embeddings_response = get_embeddings(text_chunks, EMBEDDINGS_MODEL)
+    print(f"Done. Embedding received...")
     embeddings = [embedding["embedding"] for embedding in embeddings_response]
     text_embeddings = list(zip(text_chunks, embeddings))
 
@@ -68,21 +70,28 @@ def get_unique_id_for_file_chunk(filename, chunk_index):
 
 def handle_file_string(file, tokenizer, redis_conn, text_embedding_field, index_name):
     filename = file[0]
+    print(f"processing file: {filename}")
     file_body_string = file[1]
 
     # Clean up the file string by replacing newlines and double spaces and semi-colons
     clean_file_body_string = file_body_string.replace("  ", " ").replace("\n", "; ").replace(';', ' ')
+    print(f"file cleaned of newlines, double spaces, and semicolons")
     #
     # Add the filename to the text to embed
     text_to_embed = "Filename is: {}; {}".format(
         filename, clean_file_body_string)
 
+    print(f"embedding file {filename} with contents: {clean_file_body_string}")
+
     # Create embeddings for the text
     try:
+        print(f"Starting the embedding process...")
         text_embeddings, average_embedding = create_embeddings_for_text(
             text_to_embed, tokenizer)
+        print(f"Finished with embedding process")
         # print("[handle_file_string] Created embedding for {}".format(filename))
     except Exception as e:
+        print(f"Failed the embedding process for file: {filename}")
         print("[handle_file_string] Error creating embedding: {}".format(e))
 
     # Get the vectors array of triples: file_chunk_id, embedding, metadata for each embedding
@@ -96,7 +105,9 @@ def handle_file_string(file, tokenizer, redis_conn, text_embedding_field, index_
                 , "file_chunk_index": i}}))
 
     try:
+        print(f"Loading vectors into Redis")
         load_vectors(redis_conn, vectors, text_embedding_field)
+        print(f"Finished loading vectors into Redis")
 
     except Exception as e:
         print(f'Ran into a problem uploading to Redis: {e}')
