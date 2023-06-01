@@ -33,3 +33,7 @@ Once you've run the notebook and tried the two Streamlit apps, you should be in 
     - The prompt and parameters for the model for it to answer accurately
     - Your search to return more relevant results
     - Your chunking/embedding approach to store the most relevant content effectively for retrieval
+
+## Getting this running...
+
+Install docker, start it, and run `docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:latest`
