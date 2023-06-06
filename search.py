@@ -2,21 +2,23 @@ import streamlit as st
 import openai
 
 from database import get_redis_connection, get_redis_results
-from config import INDEX_NAME, COMPLETIONS_MODEL
+from config import INDEX_NAME, COMPLETIONS_MODEL, OPENAI_API_KEY
 
 # initialise Redis connection
+openai.api_key = OPENAI_API_KEY
 
 client = get_redis_connection()
 
 ### SEARCH APP
 
 st.set_page_config(
-    page_title="Streamlit Search - Demo",
+    page_title="Vector Database Search - Demo",
     page_icon=":robot:"
 )
 
-st.title('Formula 1 Search')
-st.subheader("Search for any Formula 1 rule questions you have")
+st.title('Redis Search')
+st.subheader("This is a UI to show what information will be surfaced when you search the vector database.")
+st.text("You can use this to test how accurate the embeddings are. ")
 
 prompt = st.text_input("Enter your search here", "", key="input")
 

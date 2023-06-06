@@ -13,3 +13,5 @@ tiktoken
 pdfminer
 llama-index
 pypdf
+scrapy
+matplotlib
