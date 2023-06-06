@@ -15,3 +15,6 @@ llama-index
 pypdf
 scrapy
 matplotlib
+plotly
+scipy
+scikit-learn
