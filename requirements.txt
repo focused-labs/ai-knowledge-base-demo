@@ -11,3 +11,4 @@ ipykernel
 textract
 tiktoken
 pdfminer
+llama-index

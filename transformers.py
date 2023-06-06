@@ -68,13 +68,18 @@ def get_unique_id_for_file_chunk(filename, chunk_index):
     return str(filename + "-!" + str(chunk_index))
 
 
+def sanitize_text(file_body_string):
+    return file_body_string.replace("  ", " ").replace("\n", "; ").replace(';', ' ').replace("\t", " ")
+
+
 def handle_file_string(file, tokenizer, redis_conn, text_embedding_field, index_name):
     filename = file[0]
     print(f"processing file: {filename}")
     file_body_string = file[1]
 
     # Clean up the file string by replacing newlines and double spaces and semi-colons
-    clean_file_body_string = file_body_string.replace("  ", " ").replace("\n", "; ").replace(';', ' ')
+    # clean_file_body_string = file_body_string.replace("  ", " ").replace("\n", "; ").replace(';', ' ')
+    clean_file_body_string = sanitize_text(file_body_string)
     print(f"file cleaned of newlines, double spaces, and semicolons")
     #
     # Add the filename to the text to embed
