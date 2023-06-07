@@ -12,3 +12,4 @@ textract
 tiktoken
 pdfminer
 llama-index
+pypdf
