@@ -18,3 +18,4 @@ matplotlib
 plotly
 scipy
 scikit-learn
+llama-index
