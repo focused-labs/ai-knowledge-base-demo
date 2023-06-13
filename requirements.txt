@@ -13,3 +13,4 @@ tiktoken
 pdfminer
 llama-index
 pypdf
+nltk
