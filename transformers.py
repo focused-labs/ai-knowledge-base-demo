@@ -6,10 +6,14 @@ import openai
 import pandas as pd
 from numpy import array, average
 
-from config import TEXT_EMBEDDING_CHUNK_SIZE, EMBEDDINGS_MODEL, OPENAI_API_KEY
+from config import TEXT_EMBEDDING_CHUNK_SIZE, EMBEDDINGS_MODEL
 from database import load_vectors
+import os
+from dotenv import load_dotenv
 
-openai.api_key = OPENAI_API_KEY
+load_dotenv()
+
+openai.api_key = os.getenv('OPENAI_API_KEY')
 
 
 def get_col_average_from_list_of_lists(list_of_lists):

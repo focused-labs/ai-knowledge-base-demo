@@ -9,31 +9,15 @@ This repo contains one notebook and two basic Streamlit apps:
 
 To run either version of the app, please follow the instructions in the respective README.md files in the subdirectories.
 
-## How it works
-
-The notebook is the best place to start, and is broadly laid out as follows:
-- **Lay the foundations:**
-    - Set up the vector database to accept vectors and data
-    - Load the dataset, chunk the data up for embedding and store in the vector database
-- **Make it a product:**
-    - Add a retrieval step where users provide queries and we return the most relevant entries
-    - Summarise search results with GPT-3
-    - Test out this basic Q&A app in Streamlit
-- **Build your moat:**
-    - Create an Assistant class to manage context and interact with our bot
-    - Use the Chatbot to answer questions using semantic search context
-    - Test out this basic Chatbot app in Streamlit
-
-Once you've run the notebook and tried the two Streamlit apps, you should be in a position to strip out any useful snippets and start your own Q&A or Chat application.
-
-## Limitations
-
-- This app uses Redis as a vector database, but there are many other options highlighted `../examples/vector_databases` depending on your need.
-- This is a simple starting point - if you hit issues deploying your use case you may need to tune (non-exhaustive list):
-    - The prompt and parameters for the model for it to answer accurately
-    - Your search to return more relevant results
-    - Your chunking/embedding approach to store the most relevant content effectively for retrieval
-
 ## Getting this running...
 
 Install docker, start it, and run `docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:latest`
+
+### Create `.env` file
+- Create a file at the root of the project named `.env`
+- Add the following: 
+```
+OPENAI_API_KEY = "<retrieve value from 1password 'Special Projects or R&D' Vault - Open AI API Token Secure Note>"
+NOTION_API_KEY = "<retrieve value from 1password 'Special Projects or R&D' Vault - Notion API Token Secure Note>"
+GITHUB_TOKEN = "<set up your own github account using your focusedlabs email, and create a token>"
+```

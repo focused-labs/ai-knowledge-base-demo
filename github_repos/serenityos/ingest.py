@@ -2,6 +2,9 @@ import os
 from llama_hub.github_repo import GithubRepositoryReader, GithubClient
 from llama_index import LLMPredictor, VectorStoreIndex, ServiceContext
 from langchain import OpenAI
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # 0. Make sure GITHUB_TOKEN and OPENAI_API_KEY are in the environment (or in the run config if running in PyCharm)
 github_client = GithubClient(os.getenv("GITHUB_TOKEN"))
