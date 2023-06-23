@@ -1,5 +1,5 @@
 from llama_index.indices.composability import ComposableGraph
-from llama_index import ListIndex
+from llama_index import GPTSimpleKeywordTableIndex
 
 
 class IndexGraph:
@@ -19,9 +19,8 @@ class IndexGraph:
         else:
             IndexGraph.__instance = self
             self.graph = ComposableGraph.from_indices(
-                ListIndex,
+                GPTSimpleKeywordTableIndex,
                 index_set,
                 index_summaries=index_summaries,
-                service_context=service_context,
-                storage_context=storage_context,
+                max_keywords_per_chunk=50
             )

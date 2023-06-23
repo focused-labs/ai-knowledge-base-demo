@@ -1,8 +1,12 @@
+from langchain.chat_models import ChatOpenAI
+from llama_index.indices.query.query_transform import DecomposeQueryTransform
+from llama_index.query_engine import TransformQueryEngine
+
 from llama_index import NotionPageReader
 import os
 from dotenv import load_dotenv
 from transformers import normalize_text
-from llama_index import GPTVectorStoreIndex, download_loader, ListIndex, LLMPredictor, ServiceContext
+from llama_index import GPTVectorStoreIndex, download_loader, LLMPredictor, ServiceContext
 from llama_index.vector_stores import RedisVectorStore
 from llama_index.storage.storage_context import StorageContext
 from langchain import OpenAI
@@ -19,7 +23,7 @@ WEB_SCRAPE_PREFIX = "webscrapefocusedlabsdocs"
 page_ids = [
     "40b801917ab04deb8f5759d9d3e2da59",  # The Chicago Office
     "64c61657f90b48f786e8b55098f26e3a",  # Denver Lightning Talks
-    "76d816d82434423d8fbec83a3979d245",  # AI Knowledge Base
+    # "76d816d82434423d8fbec83a3979d245",  # AI Knowledge Base
     "642768dbfd6041e699a24b2863fab5b2",  # Denver IRL Agenda
     "9f45258c6cab4592badeec6f1060e5df",  # Pairing
     "c4e0d82f59d444c486066205919e2088",  # Why we do what we do
@@ -42,13 +46,14 @@ page_ids = [
     "94f952deb00740929e9b526f93609c46",  # Denver activities and meals
     "8ea1eccd201842c28f9cd709b95754a1"]  # Chicago IRL Agenda
 
+llm_predictor_chatgpt = LLMPredictor(llm=ChatOpenAI(temperature=0, max_tokens=512))
+service_context = ServiceContext.from_defaults(llm_predictor=llm_predictor_chatgpt)
 
 def import_data():
     pass
 
 
 def import_notion_data():
-    print(integration_token)
     documents = NotionPageReader(integration_token=integration_token).load_data(page_ids=page_ids)
 
     print(documents)
@@ -65,7 +70,8 @@ def import_notion_data():
 
     vector_store = get_vector_store(NOTION_INDEX_NAME, NOTION_PREFIX)
     storage_context = StorageContext.from_defaults(vector_store=vector_store)
-    index = GPTVectorStoreIndex.from_documents(documents, storage_context=storage_context)
+    index = GPTVectorStoreIndex.from_documents(documents, storage_context=storage_context,
+                                               service_context=service_context)
     return index
 
 
@@ -94,7 +100,8 @@ def import_web_scrape_data():
 
     vector_store = get_vector_store(WEB_SCRAPE_INDEX_NAME, WEB_SCRAPE_PREFIX)
     storage_context = StorageContext.from_defaults(vector_store=vector_store)
-    index = GPTVectorStoreIndex.from_documents(documents, storage_context=storage_context)
+    index = GPTVectorStoreIndex.from_documents(documents, storage_context=storage_context,
+                                               service_context=service_context)
     return index
 
 
@@ -106,16 +113,36 @@ def number_of_stored_web_scrape_docs():
 
 def compose_graph():
     # describe each index to help traversal of composed graph
-    index_summaries = ["Focused Labs knowledge from Notion", "Focused Labs knowledge scraped from website"]
+    index_summaries = ["Focused Labs internal knowledge from Notion",
+                       "Focused Labs public knowledge scraped from website"]
+    index_name = ["Notion_Documents", "Website_Documents"]
     index_set = get_index_set()
 
     # define an LLMPredictor set number of output tokens
-    llm_predictor = LLMPredictor(llm=OpenAI(temperature=0, max_tokens=512))
-    service_context = ServiceContext.from_defaults(llm_predictor=llm_predictor)
+    # llm_predictor = LLMPredictor(llm=OpenAI(temperature=0, max_tokens=512))
+    # service_context = ServiceContext.from_defaults(llm_predictor=llm_predictor)
     storage_context = StorageContext.from_defaults()
 
     index_graph = IndexGraph(index_set, index_summaries, service_context, storage_context)
-    return index_graph.graph
+    decompose_transform = DecomposeQueryTransform(
+        llm_predictor_chatgpt, verbose=True
+    )
+
+    custom_query_engines = {}
+    for i, index in enumerate(index_set):
+        query_engine = index.as_query_engine(service_context=service_context, storage_context=storage_context)
+        transform_extra_info = {'index_summary': index_summaries[i]}
+        tranformed_query_engine = TransformQueryEngine(query_engine, decompose_transform,
+                                                       transform_extra_info=transform_extra_info)
+        custom_query_engines[index_name[i]] = tranformed_query_engine
+
+    custom_query_engines[index_graph.graph.root_index.index_id] = index_graph.graph.root_index.as_query_engine(
+        retriever_mode='simple',
+        response_mode='tree_summarize',
+        service_context=service_context
+    )
+
+    return index_graph.graph.as_query_engine(custom_query_engines=custom_query_engines)
 
 
 def get_specific_index(index_name, prefix_name):
