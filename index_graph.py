@@ -12,7 +12,7 @@ class IndexGraph:
             IndexGraph()
         return IndexGraph.__instance
 
-    def __init__(self, index_set, index_summaries, service_context, storage_context):
+    def __init__(self, index_set, index_summaries):
         """ Virtually private constructor. """
         if IndexGraph.__instance != None:
             raise Exception("This class is a singleton!")

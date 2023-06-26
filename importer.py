@@ -56,8 +56,6 @@ def import_data():
 def import_notion_data():
     documents = NotionPageReader(integration_token=integration_token).load_data(page_ids=page_ids)
 
-    print(documents)
-
     # checks for duplicates in the document list by id
     # ids = [document.doc_id for document in documents]
     # seen = set()
@@ -118,23 +116,18 @@ def compose_graph():
     index_name = ["Notion_Documents", "Website_Documents"]
     index_set = get_index_set()
 
-    # define an LLMPredictor set number of output tokens
-    # llm_predictor = LLMPredictor(llm=OpenAI(temperature=0, max_tokens=512))
-    # service_context = ServiceContext.from_defaults(llm_predictor=llm_predictor)
-    storage_context = StorageContext.from_defaults()
-
-    index_graph = IndexGraph(index_set, index_summaries, service_context, storage_context)
+    index_graph = IndexGraph(index_set, index_summaries)
     decompose_transform = DecomposeQueryTransform(
         llm_predictor_chatgpt, verbose=True
     )
 
     custom_query_engines = {}
     for i, index in enumerate(index_set):
-        query_engine = index.as_query_engine(service_context=service_context, storage_context=storage_context)
+        query_engine = index.as_query_engine(service_context=service_context)
         transform_extra_info = {'index_summary': index_summaries[i]}
-        tranformed_query_engine = TransformQueryEngine(query_engine, decompose_transform,
-                                                       transform_extra_info=transform_extra_info)
-        custom_query_engines[index_name[i]] = tranformed_query_engine
+        transformed_query_engine = TransformQueryEngine(query_engine, decompose_transform,
+                                                        transform_extra_info=transform_extra_info)
+        custom_query_engines[index_name[i]] = transformed_query_engine
 
     custom_query_engines[index_graph.graph.root_index.index_id] = index_graph.graph.root_index.as_query_engine(
         retriever_mode='simple',
