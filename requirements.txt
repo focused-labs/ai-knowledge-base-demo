@@ -21,3 +21,5 @@ llama-index
 langchain
 python-dotenv
 httpx
+fastapi
+uvicorn

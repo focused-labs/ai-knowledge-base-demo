@@ -90,7 +90,7 @@ def import_web_scrape_data():
               "https://focusedlabs.io/case-studies/aperture-agile-transformation",
               "https://focusedlabs.io/case-studies/automated-core-business-functionality"])
 
-    print(documents)
+    # print(documents)
 
     for document in documents:
         document.text = normalize_text(document.text)
