@@ -9,7 +9,6 @@ from transformers import normalize_text
 from llama_index import GPTVectorStoreIndex, download_loader, LLMPredictor, ServiceContext
 from llama_index.vector_stores import RedisVectorStore
 from llama_index.storage.storage_context import StorageContext
-from langchain import OpenAI
 from index_graph import IndexGraph
 
 load_dotenv()
