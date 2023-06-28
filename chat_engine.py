@@ -4,7 +4,7 @@ from importer import compose_graph
 from utils import get_service_context
 
 
-def create_chat_engine():
+def create_condense_question_chat_engine():
     custom_prompt = Prompt("""
     You are a helpful virtual assistant for the employees of Focused Labs. Focused Labs is a boutique Software 
     Consulting firm that specializes in enterprise application development and digital transformation. 
