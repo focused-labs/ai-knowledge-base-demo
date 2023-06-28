@@ -4,6 +4,7 @@ from importer import compose_graph
 from utils import get_service_context
 
 
+# TODO: I removed the roles from the prompts for now...
 def create_condense_question_chat_engine():
     custom_prompt = Prompt("""
     You are a helpful virtual assistant for the employees of Focused Labs. Focused Labs is a boutique Software 
