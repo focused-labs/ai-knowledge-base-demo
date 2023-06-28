@@ -1,6 +1,8 @@
 from langchain.chat_models import ChatOpenAI
+from llama_index.chat_engine import CondenseQuestionChatEngine
 from llama_index.indices.query.query_transform import DecomposeQueryTransform
 from llama_index.query_engine import TransformQueryEngine
+from llama_index.prompts import Prompt
 
 from llama_index import NotionPageReader
 import os
@@ -47,9 +49,6 @@ page_ids = [
 
 llm_predictor_chatgpt = LLMPredictor(llm=ChatOpenAI(temperature=0, max_tokens=512))
 service_context = ServiceContext.from_defaults(llm_predictor=llm_predictor_chatgpt)
-
-def import_data():
-    pass
 
 
 def import_notion_data():
@@ -135,6 +134,68 @@ def compose_graph():
     )
 
     return index_graph.graph.as_query_engine(custom_query_engines=custom_query_engines)
+
+
+def create_chat_engine():
+    custom_prompt = Prompt("""
+    You are a helpful virtual assistant for the employees of Focused Labs. Focused Labs is a boutique Software 
+    Consulting firm that specializes in enterprise application development and digital transformation. 
+    Employees will ask you Questions about the inner workings of the company. Questions could range in areas such 
+    as process, procedure, policy, and culture. 
+            
+    Think about this step by step:
+    - The employee will ask a Question
+    - Once they ask a question, say "let me check on that for you...".
+
+    Example:
+    
+    User: When is the 2023 Chicago IRL scheduled for?
+    
+    Assistant: Let me check on that for you...
+    Given a conversation (between Human and Assistant) and a follow up message from Human, 
+    rewrite the message to be a standalone question that captures all relevant context 
+    from the conversation.
+    
+    <Chat History> 
+    {chat_history}
+    
+    <Follow Up Message>
+    {question}
+    
+    <Standalone question>
+    """)
+
+    custom_chat_history = [
+        (
+            'Hello assistant, we are having a insightful discussion about Focused Labs today.',
+            'Okay, sounds good.'
+        )
+    ]
+
+    # tool1 = QueryEngineTool.from_defaults(
+    #     query_engine=compose_graph(),
+    #     description="Use this query engine to find information about Focused Labs. This information includes: the "
+    #                 "kind of work Focused Labs produces, information about how the company works, "
+    #                 "employee information, project information, marketing materials, and case studies.",
+    # )
+
+    # return ReActChatEngine.from_query_engine(
+    #     query_engine=compose_graph(),
+    #     name="Focused Labs Chat",
+    #     description="Use this query engine to find information about Focused Labs. This information includes: the "
+    #                 "kind of work Focused Labs produces, information about how the company works, "
+    #                 "employee information, project information, marketing materials, and case studies.",
+    #     service_context=service_context,
+    #     verbose=True
+    # )
+
+    return CondenseQuestionChatEngine.from_defaults(
+        query_engine=compose_graph(),
+        condense_question_prompt=custom_prompt,
+        chat_history=custom_chat_history,
+        service_context=service_context,
+        verbose=True
+    )
 
 
 def get_specific_index(index_name, prefix_name):
