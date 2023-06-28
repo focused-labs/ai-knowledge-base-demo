@@ -6,3 +6,7 @@ VECTOR_FIELD_NAME = 'content_vector'
 PREFIX = "focusedlabsdoc"
 INDEX_NAME = "fl-index"
 MAX_TOKENS = 500
+NOTION_INDEX_NAME = "notion-fl-index"
+NOTION_PREFIX = "notionfocusedlabsdocs"
+WEB_SCRAPE_INDEX_NAME = "web-scrape-fl-index"
+WEB_SCRAPE_PREFIX = "webscrapefocusedlabsdocs"

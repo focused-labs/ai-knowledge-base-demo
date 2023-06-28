@@ -1,23 +1,18 @@
 from llama_index.indices.query.query_transform import DecomposeQueryTransform
 from llama_index.query_engine import TransformQueryEngine
-
+from config import NOTION_INDEX_NAME, NOTION_PREFIX, WEB_SCRAPE_INDEX_NAME, WEB_SCRAPE_PREFIX
+from database import get_index_set, get_vector_store, get_storage_context
 from llama_index import NotionPageReader
 import os
 from dotenv import load_dotenv
 from transformers import normalize_text
 from llama_index import GPTVectorStoreIndex, download_loader
-from llama_index.vector_stores import RedisVectorStore
-from llama_index.storage.storage_context import StorageContext
 from index_graph import IndexGraph
 from utils import get_service_context, get_llm_predictor
 
 load_dotenv()
 NOTION_API_KEY = os.getenv('NOTION_API_KEY')
-integration_token = NOTION_API_KEY
-NOTION_INDEX_NAME = "notion-fl-index"
-NOTION_PREFIX = "notionfocusedlabsdocs"
-WEB_SCRAPE_INDEX_NAME = "web-scrape-fl-index"
-WEB_SCRAPE_PREFIX = "webscrapefocusedlabsdocs"
+
 
 page_ids = [
     "40b801917ab04deb8f5759d9d3e2da59",  # The Chicago Office
@@ -47,7 +42,7 @@ page_ids = [
 
 
 def import_notion_data():
-    documents = NotionPageReader(integration_token=integration_token).load_data(page_ids=page_ids)
+    documents = NotionPageReader(integration_token=NOTION_API_KEY).load_data(page_ids=page_ids)
 
     # checks for duplicates in the document list by id
     # ids = [document.doc_id for document in documents]
@@ -59,9 +54,8 @@ def import_notion_data():
     for document in documents:
         document.text = normalize_text(document.text)
 
-    vector_store = get_vector_store(NOTION_INDEX_NAME, NOTION_PREFIX)
-    storage_context = StorageContext.from_defaults(vector_store=vector_store)
-    index = GPTVectorStoreIndex.from_documents(documents, storage_context=storage_context,
+    index = GPTVectorStoreIndex.from_documents(documents,
+                                               storage_context=get_storage_context(NOTION_INDEX_NAME, NOTION_PREFIX),
                                                service_context=get_service_context())
     return index
 
@@ -89,9 +83,9 @@ def import_web_scrape_data():
     for document in documents:
         document.text = normalize_text(document.text)
 
-    vector_store = get_vector_store(WEB_SCRAPE_INDEX_NAME, WEB_SCRAPE_PREFIX)
-    storage_context = StorageContext.from_defaults(vector_store=vector_store)
-    index = GPTVectorStoreIndex.from_documents(documents, storage_context=storage_context,
+    index = GPTVectorStoreIndex.from_documents(documents,
+                                               storage_context=get_storage_context(WEB_SCRAPE_INDEX_NAME,
+                                                                                   WEB_SCRAPE_PREFIX),
                                                service_context=get_service_context())
     return index
 
@@ -130,26 +124,3 @@ def compose_graph():
 
     return index_graph.graph.as_query_engine(custom_query_engines=custom_query_engines)
 
-
-def get_specific_index(index_name, prefix_name):
-    vector_store = get_vector_store(index_name, prefix_name)
-    storage_context = StorageContext.from_defaults(vector_store=vector_store)
-    index = GPTVectorStoreIndex([], storage_context=storage_context)
-    return index
-
-
-def get_index_set():
-    notion_index = get_specific_index(NOTION_INDEX_NAME, NOTION_PREFIX)
-    web_scrape_index = get_specific_index(WEB_SCRAPE_INDEX_NAME, WEB_SCRAPE_PREFIX)
-
-    index_set = [notion_index, web_scrape_index]
-    return index_set
-
-
-def get_vector_store(index_name, prefix_name):
-    return RedisVectorStore(
-        index_name=index_name,
-        index_prefix=prefix_name,
-        redis_url="redis://localhost:6379",
-        overwrite=True,
-    )
