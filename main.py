@@ -37,6 +37,28 @@ def load_web_scrape_documents():
     import_web_scrape_data()
     print("Number of store web scraped docs: ", number_of_stored_web_scrape_docs())
 
+
+class Question(BaseModel):
+    text: str
+    role: str
+
+
+prompt_intros = {
+    "none": "You know a lot about Focused Labs",
+    "developer": "Your role at Focused Labs is software developer",
+    "designer": "Your role at Focused Labs is UX / UI designer",
+    "executive": "Your role at Focused Labs is stakeholder",
+    "client": "You are a prospective client evaluating Focused Labs as a potential partner"
+}
+
+
+def expand_prompt(question: Question):
+    if question.role is None:
+        question.role = "none"
+    prompt = prompt_intros[question.role]
+    return prompt + ". " + question.text
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_logging()
@@ -50,6 +72,7 @@ async def lifespan(app: FastAPI):
     yield
     query_engines['doc_query_engine'] = None
 
+
 app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
@@ -61,10 +84,6 @@ app.add_middleware(
 )
 
 
-class Question(BaseModel):
-    text: str
-
-
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
@@ -72,5 +91,7 @@ async def root():
 
 @app.post("/query/")
 async def query(question: Question):
-    response = query_engines['doc_query_engine'].query(question.text)
+    prompt = expand_prompt(question)
+    print(prompt)
+    response = query_engines['doc_query_engine'].query(prompt)
     return {"response": response}
