@@ -24,16 +24,18 @@ def init_logging():
 
 def load_notion_documents():
     print("Loading notion docs")
-    redis_client = get_redis_connection()
-    redis_client.ft(NOTION_INDEX_NAME).dropindex()
+    # TODO only drop the index if it exists
+    # redis_client = get_redis_connection()
+    # redis_client.ft(NOTION_INDEX_NAME).dropindex()
     import_notion_data()
     print("Number of stored notion docs: ", number_of_stored_notion_docs())
 
 
 def load_web_scrape_documents():
     print("Loading web scraped docs")
-    redis_client = get_redis_connection()
-    redis_client.ft(WEB_SCRAPE_INDEX_NAME).dropindex()
+    # TODO only drop the index if it exists
+    # redis_client = get_redis_connection()
+    # redis_client.ft(WEB_SCRAPE_INDEX_NAME).dropindex()
     import_web_scrape_data()
     print("Number of store web scraped docs: ", number_of_stored_web_scrape_docs())
 
