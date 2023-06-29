@@ -1,7 +1,8 @@
+from focused_labs_agent import FocusedLabsAgent
 from llama_index import Prompt
 from llama_index.chat_engine import CondenseQuestionChatEngine
 from importer import compose_graph
-from utils import get_service_context
+from utils import get_service_context, output_response
 
 
 # TODO: I removed the roles from the prompts for now...
@@ -41,23 +42,6 @@ def create_condense_question_chat_engine():
         )
     ]
 
-    # tool1 = QueryEngineTool.from_defaults(
-    #     query_engine=compose_graph(),
-    #     description="Use this query engine to find information about Focused Labs. This information includes: the "
-    #                 "kind of work Focused Labs produces, information about how the company works, "
-    #                 "employee information, project information, marketing materials, and case studies.",
-    # )
-
-    # return ReActChatEngine.from_query_engine(
-    #     query_engine=compose_graph(),
-    #     name="Focused Labs Chat",
-    #     description="Use this query engine to find information about Focused Labs. This information includes: the "
-    #                 "kind of work Focused Labs produces, information about how the company works, "
-    #                 "employee information, project information, marketing materials, and case studies.",
-    #     service_context=service_context,
-    #     verbose=True
-    # )
-
     return CondenseQuestionChatEngine.from_defaults(
         query_engine=compose_graph(),
         condense_question_prompt=custom_prompt,
@@ -65,3 +49,37 @@ def create_condense_question_chat_engine():
         service_context=get_service_context(),
         verbose=True
     )
+
+
+def create_lang_chain_chat_engine():
+
+    assistant = FocusedLabsAgent(compose_graph())
+
+    # while True:
+    try:
+        # if not init_conversation:
+        #     user_input = input("Hi Am {} Buddy, Ask your question...".format(
+        #         settings.COMPANY_NAME))
+        #     init_conversation = True
+        # else:
+        #     user_input = input("Please ask your question...")
+        user_input = input("Please ask your question...")
+        agent_prompt = assistant.prompt_persona.format(
+            query=user_input,
+            company_name="Focused Labs",
+            company_email="work@focusedlabs.io")
+        response = assistant.agent.run(agent_prompt)
+        output_response(response)
+    except ValueError as e:
+        response = str(e)
+        response_prefix = "Could not parse LLM output: `"
+        if not response.startswith(response_prefix):
+            raise e
+        response_suffix = "`"
+        if response.startswith(response_prefix):
+            response = response[len(response_prefix):]
+        if response.endswith(response_suffix):
+            response = response[:-len(response_suffix)]
+        output_response(response)
+        # except KeyboardInterrupt:
+        #     break

@@ -98,8 +98,13 @@ def number_of_stored_web_scrape_docs():
 
 def compose_graph():
     # describe each index to help traversal of composed graph
-    index_summaries = ["Focused Labs internal knowledge from Notion",
-                       "Focused Labs public knowledge scraped from website"]
+    index_summaries = ["Focused Labs internal knowledge from Notion. It contains information about the Denver office, "
+                       "the Chicago office, "
+                       " lightning talks, IRLs, pairing, company strategy, tech leads, company purpose, stand up, "
+                       "pair retros, project rotations, the TPI, anchors, software development.",
+                       "Focused Labs public knowledge scraped from website. It contains information about case studies,"
+                       " agile methodologies, company employees, contact information, company values, and general"
+                       "information about the company."]
     index_name = ["Notion_Documents", "Website_Documents"]
     index_set = get_index_set()
 
