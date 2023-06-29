@@ -30,16 +30,20 @@ class FocusedLabsAgent(object):
 
     @property
     def memory(self) -> ConversationBufferMemory:
-        return ConversationBufferMemory(memory_key="chat_history")
+        return ConversationBufferMemory(memory_key="chat_history",
+                                        input_key="input",
+                                        output_key="output",
+                                        return_messages=True)
 
     @property
     def agent(self) -> AgentExecutor:
         return initialize_agent(
             self.tools,
             self.llm,
-            agent=AgentType.CONVERSATIONAL_REACT_DESCRIPTION,
+            agent=AgentType.CHAT_ZERO_SHOT_REACT_DESCRIPTION,
             memory=self.memory,
             verbose=True,
+            return_intermediate_steps=True,
             max_iterations=10
         )
 
