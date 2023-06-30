@@ -34,9 +34,9 @@ page_ids = [
     "d30c87af7d60458aaf7fb412d422a691",  # 2023 Chicago IRL
     "690037a4c2a64688b43303bc4d2a65d0",  # Product Design Lunch
     "5ade11d0a39342129580364d35106eee",  # Ski Weekend
-    "50901371968b4dbb9423186c7cd392dc",  # Software Development - Issues?
+    "50901371968b4dbb9423186c7cd392dc",  # Software Development
     "dc8864d18f7c4c1595c2e278d36743c4",  # So you want to be a TPIer?
-    "447552ca7fec4e2fa568cb918d166c42",  # Anchors - Issues?
+    "447552ca7fec4e2fa568cb918d166c42",  # Anchors
     "94f952deb00740929e9b526f93609c46",  # Denver activities and meals
     "8ea1eccd201842c28f9cd709b95754a1"]  # Chicago IRL Agenda
 
@@ -101,7 +101,7 @@ def compose_graph():
     index_summaries = ["Focused Labs internal knowledge from Notion. It contains information about the Denver office, "
                        "the Chicago office, lightning talks, IRLs, pairing, company strategy, tech leads, company "
                        "purpose, stand up, pair retros, project rotations, the TPI, anchors, contact information,"
-                       " software development.",
+                       " software development, the 2023 strategy.",
                        "Focused Labs public knowledge scraped from website. It contains information about case studies,"
                        " agile methodologies, company employees, contact information, company values, and general"
                        "information about the company."]
