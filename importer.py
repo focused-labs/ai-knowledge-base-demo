@@ -102,9 +102,9 @@ def compose_graph():
                        "the Chicago office, lightning talks, IRLs, pairing, company strategy, tech leads, company "
                        "purpose, stand up, pair retros, project rotations, the TPI, anchors, contact information,"
                        " software development, the 2023 strategy.",
-                       "Focused Labs public knowledge scraped from website. It contains information about case studies,"
-                       " agile methodologies, company employees, contact information, company values, and general"
-                       "information about the company."]
+                       "Focused Labs public knowledge scraped from the website. It contains information about case "
+                       "studies, agile methodologies, company employees, contact information, company values, and "
+                       "general information about the company."]
     index_name = ["Notion_Documents", "Website_Documents"]
     index_set = get_index_set()
 
