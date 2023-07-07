@@ -27,7 +27,7 @@ def load_notion_documents():
     # TODO only drop the index if it exists
     # redis_client = get_redis_connection()
     # redis_client.ft(NOTION_INDEX_NAME).dropindex()
-    import_notion_data()
+    # import_notion_data()
     print("Number of stored notion docs: ", number_of_stored_notion_docs())
 
 
@@ -36,7 +36,7 @@ def load_web_scrape_documents():
     # TODO only drop the index if it exists
     # redis_client = get_redis_connection()
     # redis_client.ft(WEB_SCRAPE_INDEX_NAME).dropindex()
-    import_web_scrape_data()
+    # import_web_scrape_data()
     print("Number of store web scraped docs: ", number_of_stored_web_scrape_docs())
 
 
@@ -46,11 +46,11 @@ class Question(BaseModel):
 
 
 prompt_intros = {
-    "none": "You know a lot about Focused Labs",
-    "developer": "Your role at Focused Labs is software developer",
-    "designer": "Your role at Focused Labs is UX / UI designer",
-    "executive": "Your role at Focused Labs is stakeholder",
-    "client": "You are a prospective client evaluating Focused Labs as a potential partner"
+    "none": "",
+    "developer": "You are an expert software engineer. ",
+    "designer": "You are an expert UX / UI designer. ",
+    "executive": "You are an executive at a successful company. ",
+    "client": "You are evaluating Focused Labs as a potential partner. "
 }
 
 
@@ -58,7 +58,7 @@ def expand_prompt(question: Question):
     if question.role is None:
         question.role = "none"
     prompt = prompt_intros[question.role]
-    return prompt + ". " + question.text
+    return prompt + "At Focused Labs, " + question.text + " Carefully consider your answer before responding."
 
 
 @asynccontextmanager
