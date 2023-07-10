@@ -6,6 +6,7 @@ from utils import get_service_context, output_response
 
 
 # TODO: I removed the roles from the prompts for now...
+# https://gpt-index.readthedocs.io/en/latest/how_to/chat_engine/usage_pattern.html
 def create_condense_question_chat_engine():
     custom_prompt = Prompt("""
     You are a helpful virtual assistant for the employees of Focused Labs. Focused Labs is a boutique Software 
@@ -51,6 +52,7 @@ def create_condense_question_chat_engine():
     )
 
 
+# https://betterprogramming.pub/how-to-build-a-personalized-customer-service-llm-chatgpt-bot-eb4d1e373122
 def create_lang_chain_chat_engine():
 
     assistant = FocusedLabsAgent(compose_graph())
