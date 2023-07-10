@@ -75,7 +75,7 @@ def create_lang_chain_chat_engine():
         print(response)
     except ValueError as e:
         response = str(e)
-        response_prefix = "Could not parse LLM output: `"
+        response_prefix = "Could not parse LLM output: "
         if not response.startswith(response_prefix):
             raise e
         response_suffix = "`"
