@@ -20,7 +20,9 @@ class FocusedLabsAgent(object):
         self.tools = [
             Tool(
                 name="Focused Labs Domain Data Graph",
-                func=lambda q: str(self.graph.query(q)),
+                func=lambda q: str(
+                    self.graph.query("Answer with regards to Focused Labs: " + q)
+                ),
                 description="""
                 useful for when you want to answer questions from Focused Labs Domain Data Graph. Always, 
                 you must try the graph first, only answer based this Focused Labs Domain Data Graph
@@ -49,6 +51,8 @@ class FocusedLabsAgent(object):
 
     @property
     def prompt_persona(self) -> PromptTemplate:
+        # TODO: Might want to tell the tool to always use the graph to provide answers unless the question is about
+        # itself or if it is about what was previously said in the conversation.? Just an idea!
         return PromptTemplate(
             template="""
             You are a helpful virtual assistant for the employees of {company_name}. Focused Labs is a boutique Software 
@@ -63,6 +67,8 @@ class FocusedLabsAgent(object):
             
             If you don't know the answer, just say "Hmm, Im not sure please contact customer support at {company_email} 
             for further assistance." Don't try to make up an answer.
+            
+            Please provide as detailed an answer as possible.
             
             Question: Answer with regards to Focused Labs {query}            
             """,
