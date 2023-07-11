@@ -71,8 +71,8 @@ def create_lang_chain_chat_engine():
             company_name="Focused Labs",
             company_email="work@focusedlabs.io")
         response = assistant.agent({"input": agent_prompt})
-        output_response(response["output"])
         print(response)
+        output_response(response["output"])
     except ValueError as e:
         response = str(e)
         response_prefix = "Could not parse LLM output: "
