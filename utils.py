@@ -1,4 +1,3 @@
-from langchain.agents.self_ask_with_search.output_parser import SelfAskOutputParser
 from langchain.chat_models import ChatOpenAI
 from llama_index import LLMPredictor, ServiceContext
 
@@ -27,11 +26,4 @@ def output_response(response) -> None:
         print("There's no response.")
     else:
         print(response)
-    # for line in textwrap.wrap(response, width=75):
-    #     for word in line.split():
-    #         for char in word:
-    #             print(char, end='', flush=True)
-    #             time.sleep(0.01)  # Add a delay of 0.1 seconds between each character
-    #         print(' ', end='', flush=True)  # Add a space between each word
-    #     print()  # Move to the next line after each line is printed
     print("-----")

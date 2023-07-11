@@ -24,3 +24,5 @@ Run
 ```
 The reload means if you make a code change the app will restart on its own.
 
+#### References for now
+https://platform.openai.com/docs/tutorials/web-qa-embeddings

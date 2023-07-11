@@ -4,10 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from database import get_redis_connection
-from importer import NOTION_INDEX_NAME, WEB_SCRAPE_INDEX_NAME, \
-    import_notion_data, number_of_stored_notion_docs, \
-    import_web_scrape_data, number_of_stored_web_scrape_docs, \
+from importer import number_of_stored_notion_docs, number_of_stored_web_scrape_docs, \
     compose_graph
 
 allowed_origins = [

@@ -70,7 +70,7 @@ class FocusedLabsAgent(object):
             
             Please provide as detailed an answer as possible.
             
-            Question: Answer with regards to Focused Labs {query}            
+            Answer this question with regards to Focused Labs: {query}            
             """,
             input_variables=["query", "company_name", "company_email"],
         )
