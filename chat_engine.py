@@ -29,27 +29,24 @@ from utils import output_response
 # '''
 
 
-# https://betterprogramming.pub/how-to-build-a-personalized-customer-service-llm-chatgpt-bot-eb4d1e373122
 def create_lang_chain_chat_engine():
+    return FocusedLabsAgent(compose_graph())
 
-    assistant = FocusedLabsAgent(compose_graph())
 
-    # while True:
+def create_interactive_lang_chain_chat_engine():
+    assistant = create_lang_chain_chat_engine()
+    user_input = input("Please ask your question...")
+    return query_lang_chain_chat_engine(assistant, user_input)
+
+
+def query_lang_chain_chat_engine(assistant, user_input):
     try:
-        # if not init_conversation:
-        #     user_input = input("Hi Am {} Buddy, Ask your question...".format(
-        #         settings.COMPANY_NAME))
-        #     init_conversation = True
-        # else:
-        #     user_input = input("Please ask your question...")
-        user_input = input("Please ask your question...")
         agent_prompt = assistant.prompt_persona.format(
             query=user_input,
             company_name="Focused Labs",
             company_email="work@focusedlabs.io")
         response = assistant.agent({"input": agent_prompt})
-        print(response)
-        output_response(response["output"])
+        return response["output"]
     except ValueError as e:
         response = str(e)
         response_prefix = "Could not parse LLM output: "

@@ -1,9 +1,13 @@
 import logging
 import sys
 from contextlib import asynccontextmanager
+
+import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+
+from chat_engine import create_lang_chain_chat_engine, query_lang_chain_chat_engine
 from importer import number_of_stored_notion_docs, number_of_stored_web_scrape_docs, \
     compose_graph
 
@@ -46,6 +50,7 @@ prompt_intros = {
     "none": "",
     "developer": "You are an expert software engineer. ",
     "designer": "You are an expert UX / UI designer. ",
+    "pm": "You are an expert product manager.",
     "executive": "You are an executive at a successful company. ",
     "client": "You are evaluating Focused Labs as a potential partner. "
 }
@@ -67,9 +72,11 @@ async def lifespan(app: FastAPI):
     load_web_scrape_documents()
 
     # Build a graph from the indexes just created and store its query engine
-    query_engines['doc_query_engine'] = compose_graph()
+    # query_engines['doc_query_engine'] = compose_graph()
+    query_engines['focused_labs_agent'] = create_lang_chain_chat_engine()
     yield
     query_engines['doc_query_engine'] = None
+    query_engines['focused_labs_agent'] = None
 
 
 app = FastAPI(lifespan=lifespan)
@@ -90,7 +97,10 @@ async def root():
 
 @app.post("/query/")
 async def query(question: Question):
-    prompt = expand_prompt(question)
-    print(prompt)
-    response = query_engines['doc_query_engine'].query(prompt)
+    # prompt = expand_prompt(question)
+    # print(prompt)
+    response = query_lang_chain_chat_engine(query_engines['focused_labs_agent'], question.text)
     return {"response": response}
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
