@@ -46,21 +46,23 @@ class Question(BaseModel):
     role: str
 
 
-prompt_intros = {
-    "none": "",
-    "developer": "You are an expert software engineer. ",
-    "designer": "You are an expert UX / UI designer. ",
-    "pm": "You are an expert product manager.",
-    "executive": "You are an executive at a successful company. ",
-    "client": "You are evaluating Focused Labs as a potential partner. "
+personalities = {
+    "none": "website visitor",
+    "developer": "software engineer",
+    "designer": "UX/UI designer",
+    "pm": "product manager",
+    "executive": "executive",
+    "client": "potential client"
 }
 
 
-def expand_prompt(question: Question):
+def define_personality(question: Question):
     if question.role is None:
         question.role = "none"
-    prompt = prompt_intros[question.role]
-    return prompt + "At Focused Labs, " + question.text + " Carefully consider your answer before responding."
+    personality = personalities[question.role]
+    if personality is None:
+        personality = personalities["none"]
+    return personality
 
 
 @asynccontextmanager
@@ -97,9 +99,8 @@ async def root():
 
 @app.post("/query/")
 async def query(question: Question):
-    # prompt = expand_prompt(question)
-    # print(prompt)
-    response = query_lang_chain_chat_engine(query_engines['focused_labs_agent'], question.text)
+    personality = define_personality(question)
+    response = query_lang_chain_chat_engine(query_engines['focused_labs_agent'], question.text, personality)
     return {"response": response}
 
 if __name__ == "__main__":

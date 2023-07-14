@@ -39,12 +39,14 @@ def create_interactive_lang_chain_chat_engine():
     return query_lang_chain_chat_engine(assistant, user_input)
 
 
-def query_lang_chain_chat_engine(assistant, user_input):
+def query_lang_chain_chat_engine(assistant, user_input, personality="website visitor"):
     try:
         agent_prompt = assistant.prompt_persona.format(
             query=user_input,
             company_name="Focused Labs",
-            company_email="work@focusedlabs.io")
+            company_email="work@focusedlabs.io",
+            personality=personality
+        )
         response = assistant.agent({"input": agent_prompt})
         return response["output"]
     except ValueError as e:
@@ -58,5 +60,4 @@ def query_lang_chain_chat_engine(assistant, user_input):
         if response.endswith(response_suffix):
             response = response[:-len(response_suffix)]
         output_response(response)
-        # except KeyboardInterrupt:
-        #     break
+        return response

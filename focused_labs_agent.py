@@ -9,7 +9,7 @@ from config import CHAT_MODEL
 
 class FocusedLabsAgent(object):
 
-    def __init__(self,  data_source: BaseQueryEngine):
+    def __init__(self, data_source: BaseQueryEngine):
         if not isinstance(data_source, BaseQueryEngine):
             raise TypeError("data_source must be an instance of BaseQueryEngine")
         self._graph = data_source
@@ -61,18 +61,20 @@ class FocusedLabsAgent(object):
             such as process, procedure, policy, and culture. 
             Use only context Focused Labs Domain Data Graph to provide answers.
             
-            Think about this step by step:
-            - The employee will ask a Question
-            - Once they ask a question, say "let me check on that for you...".            
+            Think this through step by step.          
             
             If you don't know the answer, just say "Hmm, Im not sure please contact customer support at {company_email} 
             for further assistance." Don't try to make up an answer.
             
             Please provide as detailed an answer as possible.
             
-            Answer this question with regards to Focused Labs: {query}            
+            When considering your answer, answer from the perspective of a {personality}.
+
+            Evaluate this question and see if it relates to Focused Labs. If so, answer this question with regards to 
+            Focused Labs: {query}            
+            
             """,
-            input_variables=["query", "company_name", "company_email"],
+            input_variables=["query", "company_name", "company_email", "personality"],
         )
 
     @property
