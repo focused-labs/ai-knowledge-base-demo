@@ -1,18 +1,13 @@
-from llama_index.indices.query.query_transform import DecomposeQueryTransform
-from llama_index.query_engine import TransformQueryEngine
-from config import NOTION_INDEX_NAME, NOTION_PREFIX, WEB_SCRAPE_INDEX_NAME, WEB_SCRAPE_PREFIX
-from database import get_index_set, get_vector_store, get_storage_context
-from llama_index import NotionPageReader
+from pinecone_database import get_pinecone_storage_context
+from llama_index import NotionPageReader, VectorStoreIndex, GPTVectorStoreIndex, download_loader
 import os
 from dotenv import load_dotenv
-from transformers import normalize_text
-from llama_index import GPTVectorStoreIndex, download_loader
-from index_graph import IndexGraph
+from custom_transformers import normalize_text
 from utils import get_service_context, get_llm_predictor
+
 
 load_dotenv()
 NOTION_API_KEY = os.getenv('NOTION_API_KEY')
-
 
 page_ids = [
     "40b801917ab04deb8f5759d9d3e2da59",  # The Chicago Office
@@ -39,6 +34,7 @@ page_ids = [
     "447552ca7fec4e2fa568cb918d166c42",  # Anchors
     "94f952deb00740929e9b526f93609c46",  # Denver activities and meals
     "8ea1eccd201842c28f9cd709b95754a1"]  # Chicago IRL Agenda
+page_titles = [{}]
 
 
 def import_notion_data():
@@ -54,16 +50,10 @@ def import_notion_data():
     for document in documents:
         document.text = normalize_text(document.text)
 
-    index = GPTVectorStoreIndex.from_documents(documents,
-                                               storage_context=get_storage_context(NOTION_INDEX_NAME, NOTION_PREFIX),
-                                               service_context=get_service_context())
+    index = VectorStoreIndex.from_documents(documents,
+                                            storage_context=get_pinecone_storage_context(),
+                                            service_context=get_service_context())
     return index
-
-
-def number_of_stored_notion_docs():
-    vector_store = get_vector_store(NOTION_INDEX_NAME, NOTION_PREFIX)
-    redis_client = vector_store.client
-    return len(redis_client.keys())
 
 
 def import_web_scrape_data():
@@ -78,54 +68,11 @@ def import_web_scrape_data():
               "https://focusedlabs.io/case-studies/aperture-agile-transformation",
               "https://focusedlabs.io/case-studies/automated-core-business-functionality"])
 
-    # print(documents)
 
     for document in documents:
         document.text = normalize_text(document.text)
 
-    index = GPTVectorStoreIndex.from_documents(documents,
-                                               storage_context=get_storage_context(WEB_SCRAPE_INDEX_NAME,
-                                                                                   WEB_SCRAPE_PREFIX),
+    index = VectorStoreIndex.from_documents(documents,
+                                               storage_context=get_pinecone_storage_context(),
                                                service_context=get_service_context())
     return index
-
-
-def number_of_stored_web_scrape_docs():
-    vector_store = get_vector_store(WEB_SCRAPE_INDEX_NAME, WEB_SCRAPE_PREFIX)
-    redis_client = vector_store.client
-    return len(redis_client.keys())
-
-
-def compose_graph():
-    # describe each index to help traversal of composed graph
-    index_summaries = ["Focused Labs internal knowledge from Notion. It contains information about the Denver office, "
-                       "the Chicago office, lightning talks, IRLs, pairing, company strategy, tech leads, company "
-                       "purpose, stand up, pair retros, project rotations, the TPI, anchors, contact information,"
-                       " software development, the 2023 strategy.",
-                       "Focused Labs public knowledge scraped from the website. It contains information about case "
-                       "studies, agile methodologies, company employees, contact information, company values, and "
-                       "general information about the company."]
-    index_name = ["Notion_Documents", "Website_Documents"]
-    index_set = get_index_set()
-
-    index_graph = IndexGraph(index_set, index_summaries)
-    decompose_transform = DecomposeQueryTransform(
-        get_llm_predictor(), verbose=True
-    )
-
-    custom_query_engines = {}
-    for i, index in enumerate(index_set):
-        query_engine = index.as_query_engine(service_context=get_service_context())
-        transform_extra_info = {'index_summary': index_summaries[i]}
-        transformed_query_engine = TransformQueryEngine(query_engine, decompose_transform,
-                                                        transform_extra_info=transform_extra_info)
-        custom_query_engines[index_name[i]] = transformed_query_engine
-
-    custom_query_engines[index_graph.graph.root_index.index_id] = index_graph.graph.root_index.as_query_engine(
-        retriever_mode='simple',
-        response_mode='tree_summarize',
-        service_context=get_service_context()
-    )
-
-    return index_graph.graph.as_query_engine(custom_query_engines=custom_query_engines)
-

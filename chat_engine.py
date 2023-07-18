@@ -1,5 +1,5 @@
 from focused_labs_agent import FocusedLabsAgent
-from importer import compose_graph
+from pinecone_database import get_pinecone_index
 from utils import output_response
 
 
@@ -30,7 +30,7 @@ from utils import output_response
 
 
 def create_lang_chain_chat_engine():
-    return FocusedLabsAgent(compose_graph())
+    return FocusedLabsAgent(get_pinecone_index().as_query_engine())
 
 
 def create_interactive_lang_chain_chat_engine():

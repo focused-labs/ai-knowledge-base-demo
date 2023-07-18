@@ -8,8 +8,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from chat_engine import create_lang_chain_chat_engine, query_lang_chain_chat_engine
-from importer import number_of_stored_notion_docs, number_of_stored_web_scrape_docs, \
-    compose_graph
 
 allowed_origins = [
     "http://localhost:3000",
@@ -25,20 +23,12 @@ def init_logging():
 
 def load_notion_documents():
     print("Loading notion docs")
-    # TODO only drop the index if it exists
-    # redis_client = get_redis_connection()
-    # redis_client.ft(NOTION_INDEX_NAME).dropindex()
     # import_notion_data()
-    print("Number of stored notion docs: ", number_of_stored_notion_docs())
 
 
 def load_web_scrape_documents():
     print("Loading web scraped docs")
-    # TODO only drop the index if it exists
-    # redis_client = get_redis_connection()
-    # redis_client.ft(WEB_SCRAPE_INDEX_NAME).dropindex()
     # import_web_scrape_data()
-    print("Number of store web scraped docs: ", number_of_stored_web_scrape_docs())
 
 
 class Question(BaseModel):

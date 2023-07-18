@@ -12,20 +12,20 @@ class FocusedLabsAgent(object):
     def __init__(self, data_source: BaseQueryEngine):
         if not isinstance(data_source, BaseQueryEngine):
             raise TypeError("data_source must be an instance of BaseQueryEngine")
-        self._graph = data_source
+        self._primary_query_engine = data_source
         self.llm = ChatOpenAI(
             model_name=CHAT_MODEL,
             temperature=0
         )
         self.tools = [
             Tool(
-                name="Focused Labs Domain Data Graph",
+                name="Focused Labs Domain Data",
                 func=lambda q: str(
-                    self.graph.query("Answer with regards to Focused Labs: " + q)
+                    self.primary_query_engine.query("Answer with regards to Focused Labs: " + q)
                 ),
                 description="""
-                useful for when you want to answer questions from Focused Labs Domain Data Graph. Always, 
-                you must try the graph first, only answer based this Focused Labs Domain Data Graph
+                useful for when you want to answer questions from Focused Labs Domain Data. Always, 
+                you must try this tool first, only answer based this Focused Labs Domain Data
                 """,
             )
         ]
@@ -51,7 +51,7 @@ class FocusedLabsAgent(object):
 
     @property
     def prompt_persona(self) -> PromptTemplate:
-        # TODO: Might want to tell the tool to always use the graph to provide answers unless the question is about
+        # TODO: Might want to tell the tool to always use the primary query engine to provide answers unless the question is about
         # itself or if it is about what was previously said in the conversation.? Just an idea!
         return PromptTemplate(
             template="""
@@ -59,7 +59,7 @@ class FocusedLabsAgent(object):
             Consulting firm that specializes in enterprise application development and digital transformation. 
             Employees will ask you Questions about the inner workings of the company. Questions could range in areas 
             such as process, procedure, policy, and culture. 
-            Use only context Focused Labs Domain Data Graph to provide answers.
+            Use only context Focused Labs Domain Data to provide answers.
             
             Think this through step by step.          
             
@@ -73,14 +73,16 @@ class FocusedLabsAgent(object):
             Evaluate this question and see if it relates to Focused Labs. If so, answer this question with regards to 
             Focused Labs: {query}            
             
+            If it does not relate to Focused Labs, then say "Hmm, I'm not sure."
+            
             """,
             input_variables=["query", "company_name", "company_email", "personality"],
         )
 
     @property
-    def graph(self):
-        return self._graph
+    def primary_query_engine(self):
+        return self._primary_query_engine
 
-    @graph.setter
-    def graph(self, value):
-        self._graph = value
+    @primary_query_engine.setter
+    def primary_query_engine(self, value):
+        self._primary_query_engine = value
