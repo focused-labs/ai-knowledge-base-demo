@@ -11,6 +11,7 @@ from chat_engine import create_lang_chain_chat_engine, query_lang_chain_chat_eng
 
 allowed_origins = [
     "http://localhost:3000",
+    "https://d3itb81et1oh8m.cloudfront.net",
 ]
 
 query_engines = {}

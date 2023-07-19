@@ -25,7 +25,7 @@ class FocusedLabsAgent(object):
                 ),
                 description="""
                 useful for when you want to answer questions from Focused Labs Domain Data. Always, 
-                you must try this tool first, only answer based this Focused Labs Domain Data
+                you must try this tool first, only answer based on this Focused Labs Domain Data
                 """,
             )
         ]
