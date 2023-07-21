@@ -12,6 +12,7 @@ from chat_engine import create_lang_chain_chat_engine, query_lang_chain_chat_eng
 allowed_origins = [
     "http://localhost:3000",
     "https://d3itb81et1oh8m.cloudfront.net",
+    "https://fl-ai-knowledgehub-h27h6.ondigitalocean.app/"
 ]
 
 query_engines = {}
