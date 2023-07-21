@@ -65,8 +65,6 @@ async def lifespan(app: FastAPI):
     load_notion_documents()
     load_web_scrape_documents()
 
-    # Build a graph from the indexes just created and store its query engine
-    # query_engines['doc_query_engine'] = compose_graph()
     query_engines['focused_labs_agent'] = create_lang_chain_chat_engine()
     yield
     query_engines['doc_query_engine'] = None
