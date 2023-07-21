@@ -40,10 +40,7 @@ class Question(BaseModel):
 
 personalities = {
     "none": "website visitor",
-    "developer": "software engineer",
-    "designer": "UX/UI designer",
-    "pm": "product manager",
-    "executive": "executive",
+    "candidate": "potential employee",
     "client": "potential client"
 }
 
