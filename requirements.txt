@@ -5,11 +5,11 @@ termcolor==2.2.0
 jupyter
 ipykernel
 textract
-llama-index
-langchain
-python-dotenv
+llama-index==0.7.11
+langchain==0.0.239
+python-dotenv==1.0.0
 httpx
 fastapi
 uvicorn
-pinecone-client
+pinecone-client==2.2.2
 transformers

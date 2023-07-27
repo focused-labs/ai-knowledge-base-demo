@@ -1,3 +1,7 @@
+import os
+
+import openai
+from dotenv import load_dotenv
 from langchain import PromptTemplate
 from langchain.agents import initialize_agent, Tool, AgentType, AgentExecutor
 from langchain.chains.conversation.memory import ConversationBufferMemory
@@ -5,7 +9,9 @@ from langchain.chat_models import ChatOpenAI
 from llama_index.indices.query.base import BaseQueryEngine
 
 from config import CHAT_MODEL
-
+load_dotenv()
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+openai.api_key = OPENAI_API_KEY
 
 class FocusedLabsAgent(object):
 
