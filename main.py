@@ -1,13 +1,14 @@
 import logging
 import sys
 from contextlib import asynccontextmanager
+from uuid import uuid4, UUID
 
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from chat_engine import create_lang_chain_chat_engine, query_lang_chain_chat_engine
+from chat_engine import create_agent, query_agent
 
 allowed_origins = [
     "http://localhost:3000",
@@ -15,7 +16,7 @@ allowed_origins = [
     "https://fl-ai-knowledgehub-h27h6.ondigitalocean.app/"
 ]
 
-query_engines = {}
+agents = {}
 
 
 def init_logging():
@@ -36,6 +37,11 @@ def load_web_scrape_documents():
 class Question(BaseModel):
     text: str
     role: str
+    session_id: UUID | None
+
+
+class Session(BaseModel):
+    session_id: UUID
 
 
 personalities = {
@@ -62,10 +68,7 @@ async def lifespan(app: FastAPI):
     load_notion_documents()
     load_web_scrape_documents()
 
-    query_engines['focused_labs_agent'] = create_lang_chain_chat_engine()
     yield
-    query_engines['doc_query_engine'] = None
-    query_engines['focused_labs_agent'] = None
 
 
 app = FastAPI(lifespan=lifespan)
@@ -86,9 +89,25 @@ async def root():
 
 @app.post("/query/")
 async def query(question: Question):
+    session_id = question.session_id
+    if session_id not in agents:
+        session_id = create_session()
     personality = define_personality(question)
-    response = query_lang_chain_chat_engine(query_engines['focused_labs_agent'], question.text, personality)
-    return {"response": response}
+    response = query_agent(agents[session_id], question.text, personality)
+    return {"response": response, "session_id": session_id}
+
+
+def create_session():
+    session_id = uuid4()
+    agents[session_id] = create_agent()
+    return session_id
+
+
+@app.post("/delete_session")
+async def delete_session(session: Session):
+    if session.session_id in agents:
+        agents.pop(session.session_id)
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

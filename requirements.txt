@@ -9,7 +9,8 @@ llama-index==0.7.11
 langchain==0.0.239
 python-dotenv==1.0.0
 httpx
-fastapi
-uvicorn
+fastapi~=0.98.0
+uvicorn~=0.22.0
 pinecone-client==2.2.2
 transformers
+fastapi-sessions

@@ -61,7 +61,9 @@ def import_web_scrape_data():
 
     loader = BeautifulSoupWebReader()
     documents = loader.load_data(
-        urls=['https://focusedlabs.io', 'https://focusedlabs.io/about', 'https://focusedlabs.io/contact',
+        urls=['https://focusedlabs.io',
+              'https://focusedlabs.io/about',
+              'https://focusedlabs.io/contact',
               'https://focusedlabs.io/case-studies',
               "https://focusedlabs.io/case-studies/agile-workflow-enabled-btr-automation",
               "https://focusedlabs.io/case-studies/hertz-technology-new-markets",
