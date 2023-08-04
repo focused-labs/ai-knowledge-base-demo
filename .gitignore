@@ -1,5 +1,6 @@
 # Local environment variables
 .env
+Pipfile
 
 .idea/
 

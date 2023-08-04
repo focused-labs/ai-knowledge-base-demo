@@ -13,7 +13,7 @@ This a starter repo that builds a basic Knowledge Hub and then uses FastAPI to e
 OPENAI_API_KEY = "<retrieve value from 1password 'Special Projects or R&D' Vault - Open AI API Token Secure Note>"
 NOTION_API_KEY = "<retrieve value from 1password 'Special Projects or R&D' Vault - Notion API Token Secure Note>"
 GITHUB_TOKEN = "<set up your own github account using your focusedlabs email, and create a token>"
-PINECONE_API_KEY = "<retrieve value from 1password 'Special Projects or R&D' Vault - Pinecone DB credential">
+PINECONE_API_KEY = "<retrieve value from 1password 'Special Projects or R&D' Vault - Pinecone DB credential>"
 ```
 
 ### Pinecone Dashboard Access

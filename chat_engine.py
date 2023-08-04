@@ -22,7 +22,7 @@ def query_agent(agent, user_input, personality="website visitor"):
         return response
     except ValueError as e:
         response = str(e)
-        response_prefix = "Could not parse LLM output: "
+        response_prefix = "Could not parse LLM output: `\nAI: "
         if not response.startswith(response_prefix):
             raise e
         response_suffix = "`"
