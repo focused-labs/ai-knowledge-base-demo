@@ -12,8 +12,9 @@ from chat_engine import create_agent, query_agent
 
 allowed_origins = [
     "http://localhost:3000",
-    "https://d3itb81et1oh8m.cloudfront.net",
-    "https://fl-ai-knowledgehub-h27h6.ondigitalocean.app/"
+    "https://fl-ai-knowledgehub-h27h6.ondigitalocean.app/",
+    "https://chat.withfocus.com/",
+    "https://chat.focusedlabs.io/"
 ]
 
 agents = {}
