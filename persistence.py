@@ -78,4 +78,4 @@ def append_values(creds, spreadsheet_id, range_name, value_input_option, values)
 
 
 if __name__ == '__main__':
-    save_question(uuid4(), "Where is the chicago office?", "OMG how many times do I need to answer that?")
+    save_question(uuid4(), "Where is the chicago office?", "I think it's on Tattooine")

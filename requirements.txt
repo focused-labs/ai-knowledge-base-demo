@@ -14,3 +14,4 @@ uvicorn~=0.22.0
 pinecone-client==2.2.2
 transformers
 fastapi-sessions
+google-api-python-client
