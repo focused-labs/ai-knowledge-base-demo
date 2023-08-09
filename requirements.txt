@@ -15,3 +15,5 @@ pinecone-client==2.2.2
 transformers
 fastapi-sessions
 google-api-python-client
+google-auth-oauthlib
+pydantic~=1.8.2
