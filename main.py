@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from chat_engine import create_agent, query_agent
+from persistence import save_question
 
 allowed_origins = [
     "http://localhost:3000",
@@ -95,6 +96,7 @@ async def query(question: Question):
         session_id = create_session()
     personality = define_personality(question)
     response = query_agent(agents[session_id], question.text, personality)
+    save_question(session_id, question.text, response)
     return {"response": response, "session_id": session_id}
 
 
