@@ -1,3 +1,4 @@
+import json
 import os
 
 import openai
@@ -39,8 +40,20 @@ def create_vector_db_tool():
     return RetrievalQA.from_chain_type(
         llm=llm,
         chain_type="stuff",
-        retriever=vectorstore.as_retriever()
+        return_source_documents=True,
+        input_key="question",
+        retriever=vectorstore.as_retriever(search_kwargs={"k": 3})
     )
+
+
+def parse_source_docs(qa, query):
+    result = qa({"question": query})
+    return f"""
+    {{
+    "result": "{result["result"]}",
+    "sources": {json.dumps([i.metadata for i in result['source_documents']])}
+    }}
+    """
 
 
 def create_agent_chain():
@@ -48,7 +61,9 @@ def create_agent_chain():
     tools = [
         Tool(
             name="Focused Labs QA",
-            func=qa.run,
+            return_direct=True,
+            # func=qa.run,
+            func=lambda query: parse_source_docs(qa, query),
             description="useful for when you need to answer questions about Focused Labs"
         )
     ]

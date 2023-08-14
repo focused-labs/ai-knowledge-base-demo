@@ -1,3 +1,4 @@
+import json
 import logging
 import sys
 from contextlib import asynccontextmanager
@@ -10,6 +11,7 @@ from pydantic import BaseModel
 
 from chat_engine import create_agent, query_agent
 from persistence import save_question
+from importer import import_notion_data, import_web_scrape_data
 
 allowed_origins = [
     "http://localhost:3000",
@@ -97,7 +99,7 @@ async def query(question: Question):
     personality = define_personality(question)
     response = query_agent(agents[session_id], question.text, personality)
     save_question(session_id, question.text, response)
-    return {"response": response, "session_id": session_id}
+    return {"response": json.loads(response), "session_id": session_id}
 
 
 def create_session():

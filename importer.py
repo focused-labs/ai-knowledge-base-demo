@@ -1,10 +1,13 @@
+import json
+
+
 from pinecone_database import get_pinecone_storage_context
-from llama_index import NotionPageReader, VectorStoreIndex, GPTVectorStoreIndex, download_loader
+from llama_index import NotionPageReader, VectorStoreIndex, download_loader
 import os
 from dotenv import load_dotenv
 from custom_transformers import normalize_text
 from utils import get_service_context, get_llm_predictor
-
+import http.client
 
 load_dotenv()
 NOTION_API_KEY = os.getenv('NOTION_API_KEY')
@@ -12,7 +15,7 @@ NOTION_API_KEY = os.getenv('NOTION_API_KEY')
 page_ids = [
     "40b801917ab04deb8f5759d9d3e2da59",  # The Chicago Office
     "64c61657f90b48f786e8b55098f26e3a",  # Denver Lightning Talks
-    # "76d816d82434423d8fbec83a3979d245",  # AI Knowledge Base
+    "76d816d82434423d8fbec83a3979d245",  # AI Knowledge Base
     "642768dbfd6041e699a24b2863fab5b2",  # Denver IRL Agenda
     "9f45258c6cab4592badeec6f1060e5df",  # Pairing
     "c4e0d82f59d444c486066205919e2088",  # Why we do what we do
@@ -34,20 +37,35 @@ page_ids = [
     "447552ca7fec4e2fa568cb918d166c42",  # Anchors
     "94f952deb00740929e9b526f93609c46",  # Denver activities and meals
     "8ea1eccd201842c28f9cd709b95754a1"]  # Chicago IRL Agenda
+
 page_titles = [{}]
+
+
+def get_notion_metadata(page_id):
+    try:
+        headers = {'Authorization': f'Bearer {NOTION_API_KEY}', 'Notion-Version': '2022-06-28'}
+        connection = http.client.HTTPSConnection("api.notion.com")
+
+        connection.request("GET", f"/v1/pages/{page_id}/properties/title", headers=headers)
+        page_title = json.loads(connection.getresponse().read())
+
+        connection.request("GET", f"/v1/pages/{page_id}", headers=headers)
+        page_url = json.loads(connection.getresponse().read())
+
+        return {"page_title": page_title['results'][0]['title']['plain_text'], "page_url": page_url['url']}
+    except Exception as e:
+        print(f"Failed to retrieve notion metadata{e} for page id: {page_id}")
+        return {"page_title": "", "page_url": ""}
 
 
 def import_notion_data():
     documents = NotionPageReader(integration_token=NOTION_API_KEY).load_data(page_ids=page_ids)
-
-    # checks for duplicates in the document list by id
-    # ids = [document.doc_id for document in documents]
-    # seen = set()
-    # dupes = [x for x in ids if x in seen or seen.add(x)]
-    # print(seen)
-    # print(dupes)
-
     for document in documents:
+        document_metadata = get_notion_metadata(page_id=document.extra_info["page_id"])
+        url = document_metadata['page_url']
+        title = document_metadata['page_title']
+        document.extra_info.update({"URL": url, "title": title})
+        document.metadata = ({"URL": url, "title": title})
         document.text = normalize_text(document.text)
 
     index = VectorStoreIndex.from_documents(documents,
@@ -70,11 +88,10 @@ def import_web_scrape_data():
               "https://focusedlabs.io/case-studies/aperture-agile-transformation",
               "https://focusedlabs.io/case-studies/automated-core-business-functionality"])
 
-
     for document in documents:
         document.text = normalize_text(document.text)
 
     index = VectorStoreIndex.from_documents(documents,
-                                               storage_context=get_pinecone_storage_context(),
-                                               service_context=get_service_context())
+                                            storage_context=get_pinecone_storage_context(),
+                                            service_context=get_service_context())
     return index
