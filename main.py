@@ -97,9 +97,9 @@ async def query(question: Question):
     if session_id not in agents:
         session_id = create_session()
     personality = define_personality(question)
-    response = query_agent(agents[session_id], question.text, personality)
+    response = json.loads(query_agent(agents[session_id], question.text, personality))
     save_question(session_id, question.text, response)
-    return {"response": json.loads(response), "session_id": session_id}
+    return {"response": response, "session_id": session_id}
 
 
 def create_session():

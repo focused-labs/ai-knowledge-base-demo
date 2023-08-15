@@ -46,7 +46,8 @@ def save_question(session_id, question, answer):
                           str(datetime.utcnow()),
                           str(session_id),
                           question,
-                          answer
+                          answer["result"],
+                          ",\n".join([i['URL'] for i in answer["sources"]])
                       ]
                   ])
     except Exception as e:
