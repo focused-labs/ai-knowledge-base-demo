@@ -47,8 +47,7 @@ def save_question(session_id, question, answer):
                           str(session_id),
                           question,
                           answer["result"],
-                          # "\n".join([i['URL'] for i in answer["sources"]])
-                          answer["sources"][0]["URL"]
+                          "\n".join([i['URL'] for i in answer["sources"]])
                       ]
                   ])
     except Exception as e:
