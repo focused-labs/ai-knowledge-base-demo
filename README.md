@@ -8,7 +8,7 @@ This a starter repo that builds a basic Knowledge Hub and then uses FastAPI to e
 
 ### Create `.env` file
 - Create a file at the root of the project named `.env`
-- Add the following: 
+- Add the following:
 ```
 OPENAI_API_KEY = "<retrieve value from 1password 'Special Projects or R&D' Vault - Open AI API Token Secure Note>"
 NOTION_API_KEY = "<retrieve value from 1password 'Special Projects or R&D' Vault - Notion API Token Secure Note>"
