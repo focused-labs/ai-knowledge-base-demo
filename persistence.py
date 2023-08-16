@@ -54,6 +54,24 @@ def save_question(session_id, question, answer):
         print(f"Error returned from google authentication: {e}")
 
 
+def save_error(session_id, question, message):
+    try:
+        creds = authenticate()
+        append_values(creds, PERSISTENCE_SPREADSHEET_ID, PERSISTENCE_RANGE_NAME, "USER_ENTERED",
+                  [
+                      [
+                          str(datetime.utcnow()),
+                          str(session_id),
+                          question,
+                          "",
+                          "",
+                          message
+                      ]
+                  ])
+    except Exception as e:
+        print(f"Error returned from google authentication: {e}")
+
+
 def append_values(creds, spreadsheet_id, range_name, value_input_option, values):
     """
     Creates the batch_update the user has access to.

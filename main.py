@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from chat_engine import create_agent, query_agent
-from persistence import save_question
+from persistence import save_question, save_error
 from importer import import_notion_data, import_web_scrape_data
 
 allowed_origins = [
@@ -97,9 +97,13 @@ async def query(question: Question):
     if session_id not in agents:
         session_id = create_session()
     personality = define_personality(question)
-    response = json.loads(query_agent(agents[session_id], question.text, personality))
-    save_question(session_id, question.text, response)
-    return {"response": response, "session_id": session_id}
+    try:
+        response = json.loads(query_agent(agents[session_id], question.text, personality))
+        save_question(session_id, question.text, response)
+        return {"response": response, "session_id": session_id}
+    except Exception as e:
+        save_error(session_id, question.text, str(e))
+        raise e
 
 
 def create_session():
