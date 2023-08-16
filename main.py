@@ -51,7 +51,8 @@ class Session(BaseModel):
 personalities = {
     "none": "website visitor",
     "candidate": "potential employee",
-    "client": "potential client"
+    "client": "potential client",
+    "customer": "potential customer"
 }
 
 
