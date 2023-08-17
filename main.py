@@ -16,6 +16,7 @@ from importer import import_notion_data, import_web_scrape_data
 allowed_origins = [
     "http://localhost:3000",
     "https://fl-ai-knowledgehub-h27h6.ondigitalocean.app/",
+    "https://dev-kb-xxl7y.ondigitalocean.app/",
     "https://chat.withfocus.com/",
     "https://chat.focusedlabs.io/"
 ]
