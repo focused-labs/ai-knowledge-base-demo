@@ -4,43 +4,37 @@ import os
 from datetime import datetime
 from uuid import uuid4
 
+from dotenv import load_dotenv
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
-PERSISTENCE_SPREADSHEET_ID = ''
-PERSISTENCE_RANGE_NAME = 'Sheet1'
 
-SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
+load_dotenv()
 
 service = None
 
 
 def authenticate():
-    creds = None
-    if os.path.exists('service_account_token.json'):
-        creds = Credentials.from_authorized_user_file('service_account_token.json', SCOPES)
-
-    # If there are no (valid) credentials available, let the user log in.
+    user_info = {
+        "client_id": os.getenv("GOOGLE_API_CLIENT_ID"),
+        "client_secret": os.getenv("GOOGLE_API_CLIENT_SECRET"),
+        "refresh_token": os.getenv("GOOGLE_API_REFRESH_TOKEN"),
+        "expiry": os.getenv("GOOGLE_API_EXPIRY")
+    }
+    creds = Credentials.from_authorized_user_info(user_info, ['https://www.googleapis.com/auth/spreadsheets'])
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                'service_account_credentials.json', SCOPES)
-            creds = flow.run_local_server(port=0)
-        # Save the credentials for the next run
-        with open('service_account_token.json', 'w') as token:
-            token.write(creds.to_json())
+            os.environ["GOOGLE_API_EXPIRY"] = creds.expiry.strftime("%Y-%m-%dT%H:%M:%S")
     return creds
 
 
 def save_question(session_id, question, answer):
     try:
         creds = authenticate()
-        append_values(creds, PERSISTENCE_SPREADSHEET_ID, PERSISTENCE_RANGE_NAME, "USER_ENTERED",
+        append_values(creds, os.getenv("GOOGLE_API_SPREADSHEET_ID"), os.getenv("GOOGLE_API_RANGE_NAME"), "USER_ENTERED",
                   [
                       [
                           str(datetime.utcnow()),
@@ -57,7 +51,7 @@ def save_question(session_id, question, answer):
 def save_error(session_id, question, message):
     try:
         creds = authenticate()
-        append_values(creds, PERSISTENCE_SPREADSHEET_ID, PERSISTENCE_RANGE_NAME, "USER_ENTERED",
+        append_values(creds, os.getenv("GOOGLE_API_SPREADSHEET_ID"), os.getenv("GOOGLE_API_RANGE_NAME"), "USER_ENTERED",
                   [
                       [
                           str(datetime.utcnow()),
