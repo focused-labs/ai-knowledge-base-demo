@@ -2,6 +2,7 @@ import json
 import logging
 import sys
 from contextlib import asynccontextmanager
+from typing import Optional
 from uuid import uuid4, UUID
 
 import uvicorn
@@ -11,7 +12,6 @@ from pydantic import BaseModel
 
 from chat_engine import create_agent, query_agent
 from persistence import save_question, save_error
-from importer import import_notion_data, import_web_scrape_data
 
 allowed_origins = [
     "http://localhost:3000",
@@ -42,7 +42,7 @@ def load_web_scrape_documents():
 class Question(BaseModel):
     text: str
     role: str
-    session_id: UUID | None
+    session_id: Optional[UUID]
 
 
 class Session(BaseModel):
@@ -100,9 +100,10 @@ async def query(question: Question):
         session_id = create_session()
     personality = define_personality(question)
     try:
-        response = json.loads(query_agent(agents[session_id], question.text, personality))
-        save_question(session_id, question.text, response)
-        return {"response": response, "session_id": session_id}
+        answer = query_agent(agents[session_id], question.text, personality).replace("\n", "")
+        response_formatted = json.loads(answer)
+        save_question(session_id, question.text, response_formatted)
+        return {"response": response_formatted, "session_id": session_id}
     except Exception as e:
         save_error(session_id, question.text, str(e))
         raise e

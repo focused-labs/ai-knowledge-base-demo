@@ -1,3 +1,5 @@
+import json
+
 from agent import create_agent_chain, get_prompt_template
 from utils import output_response
 
@@ -12,6 +14,14 @@ def create_interactive_agent():
     return query_agent(agent, user_input)
 
 
+def is_answer_formatted_in_json(answer):
+    try:
+        json.loads(answer)
+        return True
+    except ValueError as e:
+        return False
+
+
 def query_agent(agent, user_input, personality="website visitor"):
     try:
         elaborate_prompt = get_prompt_template().format(
@@ -19,7 +29,14 @@ def query_agent(agent, user_input, personality="website visitor"):
             personality=personality,
         )
         response = agent.run(input=elaborate_prompt)
-        return response
+        if is_answer_formatted_in_json(response):
+            return response
+        return f"""
+            {{
+                "result": "{response}",
+                "sources": "[]"
+            }}"""
+
     except ValueError as e:
         response = str(e)
         response_prefix = "Could not parse LLM output: `\nAI: "

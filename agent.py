@@ -2,14 +2,14 @@ import json
 import os
 
 import openai
+import pinecone
 from dotenv import load_dotenv
-from langchain.agents import ZeroShotAgent, Tool, AgentExecutor
+from langchain import OpenAI, LLMChain, PromptTemplate
+from langchain.agents import ZeroShotAgent, Tool, initialize_agent, AgentType
 from langchain.chains import RetrievalQA
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.memory import ConversationBufferMemory
-from langchain import OpenAI, LLMChain, PromptTemplate
 from langchain.vectorstores import Pinecone
-import pinecone
 
 from config import PINECONE_INDEX, PINECONE_ENVIRONMENT, EMBEDDING_MODEL
 
@@ -48,12 +48,17 @@ def create_vector_db_tool():
 
 def parse_source_docs(qa, query):
     result = qa({"question": query})
+    if 'source_documents' in result.keys():
+        return f"""
+        {{
+        "result": "{result["result"]}",
+        "sources": {json.dumps([i.metadata for i in result['source_documents']])}
+        }}"""
     return f"""
     {{
     "result": "{result["result"]}",
-    "sources": {json.dumps([i.metadata for i in result['source_documents']])}
-    }}
-    """
+    "sources": []
+    }}"""
 
 
 def create_agent_chain():
@@ -62,7 +67,6 @@ def create_agent_chain():
         Tool(
             name="Focused Labs QA",
             return_direct=True,
-            # func=qa.run,
             func=lambda query: parse_source_docs(qa, query),
             description="useful for when you need to answer questions about Focused Labs"
         )
@@ -70,7 +74,7 @@ def create_agent_chain():
 
     prefix = """Have a conversation with a human, answering the following questions as best you can. You have access to the following tools:"""
     suffix = """Begin!"
-    
+
     {chat_history}
     Question: {input}
     {agent_scratchpad}"""
@@ -84,9 +88,16 @@ def create_agent_chain():
     memory = ConversationBufferMemory(memory_key="chat_history")
 
     llm_chain = LLMChain(llm=llm, prompt=prompt)
-    agent = ZeroShotAgent(llm_chain=llm_chain, tools=tools, verbose=True)
-    return AgentExecutor.from_agent_and_tools(
-        agent=agent, tools=tools, verbose=True, memory=memory
+
+    return initialize_agent(
+        tools,
+        llm,
+        agent=AgentType.CHAT_ZERO_SHOT_REACT_DESCRIPTION,
+        memory=memory,
+        verbose=True,
+        llm_chain=llm_chain,
+        max_iterations=3,
+        handle_parsing_errors=True,
     )
 
 
@@ -103,7 +114,7 @@ def get_prompt_template() -> PromptTemplate:
                     
                     Think this through step by step.          
                     
-                    If you don't know the answer, just say "Hmm, I'm not sure please contact work@focusedlabs.io" 
+                    If you don't know the answer, just say "Hmm, I'm not sure please contact work@focusedlabs.io  
                     for further assistance." Don't try to make up an answer.
                     
                     Please provide as detailed an answer as possible.
