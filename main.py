@@ -1,17 +1,21 @@
 import json
 import logging
+import os
 import sys
 from contextlib import asynccontextmanager
 from typing import Optional
 from uuid import uuid4, UUID
 
 import uvicorn
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from chat_engine import create_agent, query_agent
 from persistence import save_question, save_error
+
+load_dotenv()
 
 allowed_origins = [
     "http://localhost:3000",
@@ -102,10 +106,11 @@ async def query(question: Question):
     try:
         answer = query_agent(agents[session_id], question.text, personality).replace("\n", "")
         response_formatted = json.loads(answer)
-        save_question(session_id, question.text, response_formatted)
+        save_question(session_id, question.text, response_formatted, os.getenv("GOOGLE_API_SPREADSHEET_ID"),
+                      os.getenv("GOOGLE_API_RANGE_NAME"))
         return {"response": response_formatted, "session_id": session_id}
     except Exception as e:
-        save_error(session_id, question.text, str(e))
+        error = save_error(session_id, question.text, str(e), os.getenv("GOOGLE_API_SPREADSHEET_ID"), os.getenv("GOOGLE_API_RANGE_NAME"))
         raise e
 
 

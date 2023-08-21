@@ -2,6 +2,9 @@
 .env
 Pipfile
 
+# Credentials for google cloud APIs
+service_account_credentials.json
+
 .idea/
 
 # Byte-compiled / optimized / DLL files
