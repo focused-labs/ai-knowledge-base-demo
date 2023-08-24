@@ -13,6 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from chat_engine import create_agent, query_agent
+from importer import import_web_scrape_data, import_notion_data
 from persistence import save_question, save_error
 
 load_dotenv()
@@ -33,20 +34,18 @@ def init_logging():
     logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 
 
-def load_notion_documents():
-    print("Loading notion docs")
-    # import_notion_data()
-
-
-def load_web_scrape_documents():
-    print("Loading web scraped docs")
-    # import_web_scrape_data()
-
-
 class Question(BaseModel):
     text: str
     role: str
     session_id: Optional[UUID]
+
+
+class ImportedPages(BaseModel):
+    page_ids: list
+
+
+class ImportedUrls(BaseModel):
+    page_urls: list
 
 
 class Session(BaseModel):
@@ -74,10 +73,6 @@ def define_personality(question: Question):
 async def lifespan(app: FastAPI):
     init_logging()
 
-    # Load documents. This can be slow so block the API until ready
-    load_notion_documents()
-    load_web_scrape_documents()
-
     yield
 
 
@@ -90,6 +85,19 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.post("/load-notion-docs")
+def load_notion_documents(imported_pages: ImportedPages):
+    print(f"Loading the following notion docs {imported_pages}")
+    import_notion_data(imported_pages.page_ids)
+    return {"status": "Notion Docs Loaded"}
+
+
+@app.post("/load-website-docs")
+def load_web_scrape_documents(website: ImportedUrls):
+    print(f"Loading following web scraped docs {website.page_urls}")
+    import_web_scrape_data(website.page_urls)
 
 
 @app.get("/")
