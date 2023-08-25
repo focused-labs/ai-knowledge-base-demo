@@ -112,7 +112,7 @@ async def query(question: Question):
         session_id = create_session()
     personality = define_personality(question)
     try:
-        answer = query_agent(agents[session_id], question.text, personality)
+        answer = query_agent(agents[session_id], question.text, personality).replace("\n", "")
         response_formatted = json.loads(answer)
         save_question(session_id, question.text, response_formatted, os.getenv("GOOGLE_API_SPREADSHEET_ID"),
                       os.getenv("GOOGLE_API_RANGE_NAME"))

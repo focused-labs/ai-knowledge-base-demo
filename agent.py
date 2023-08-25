@@ -4,22 +4,20 @@ import os
 import openai
 import pinecone
 from dotenv import load_dotenv
-from langchain import LLMChain, PromptTemplate
+from langchain import OpenAI, LLMChain, PromptTemplate
 from langchain.agents import ZeroShotAgent, Tool, initialize_agent, AgentType
 from langchain.chains import RetrievalQA
-from langchain.chat_models import ChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.memory import ConversationBufferMemory
 from langchain.vectorstores import Pinecone
 
-from config import PINECONE_INDEX, PINECONE_ENVIRONMENT, EMBEDDING_MODEL, CHAT_MODEL
-from utils import strip_parse_error_message
+from config import PINECONE_INDEX, PINECONE_ENVIRONMENT, EMBEDDING_MODEL
 
 load_dotenv()
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 openai.api_key = OPENAI_API_KEY
 
-llm = ChatOpenAI(temperature=0, model_name=CHAT_MODEL)
+llm = OpenAI(temperature=0)
 
 
 def create_vector_db_tool():
@@ -39,25 +37,12 @@ def create_vector_db_tool():
     vectorstore = Pinecone(
         index, embedding_model.embed_query, text_field
     )
-    template = """You are a helpful virtual assistant for the employees of Focused Labs, Answer this 
-    question as detailed as possible if you don't know the answer 
-    you must only say "Hmm, I'm not sure please contact work@focusedlabs.io for further assistance.":
-     {question}
-     {context}
-     """
-
     return RetrievalQA.from_chain_type(
         llm=llm,
         chain_type="stuff",
         return_source_documents=True,
         input_key="question",
-        retriever=vectorstore.as_retriever(search_kwargs={"k": 3}),
-        chain_type_kwargs={
-            "prompt": PromptTemplate(
-                template=template,
-                input_variables=["question", "context"],
-            ),
-        },
+        retriever=vectorstore.as_retriever(search_kwargs={"k": 3})
     )
 
 
@@ -87,8 +72,7 @@ def create_agent_chain():
         )
     ]
 
-    prefix = """Have a conversation with a human, answering the following questions as best you can.
-     You have access to the following tools:"""
+    prefix = """Have a conversation with a human, answering the following questions as best you can. You have access to the following tools:"""
     suffix = """Begin!"
 
     {chat_history}
@@ -113,8 +97,7 @@ def create_agent_chain():
         verbose=True,
         llm_chain=llm_chain,
         max_iterations=3,
-        handle_parsing_errors=strip_parse_error_message,
-        early_stopping_method="generate",
+        handle_parsing_errors=True,
     )
 
 

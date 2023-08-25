@@ -29,12 +29,11 @@ def query_agent(agent, user_input, personality="website visitor"):
             personality=personality,
         )
         response = agent.run(input=elaborate_prompt)
-        response_formatted = response.replace("\n", "")
-        if is_answer_formatted_in_json(response_formatted):
-            return response_formatted
+        if is_answer_formatted_in_json(response):
+            return response
         return f"""
             {{
-                "result": "{response_formatted}",
+                "result": "{response}",
                 "sources": "[]"
             }}"""
 
