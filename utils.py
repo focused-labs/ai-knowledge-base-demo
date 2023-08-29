@@ -1,9 +1,11 @@
 from langchain.chat_models import ChatOpenAI
 from llama_index import LLMPredictor, ServiceContext
 
+from config import CHAT_MODEL
+
 
 def get_llm_predictor():
-    return LLMPredictor(llm=ChatOpenAI(temperature=0, max_tokens=512))
+    return LLMPredictor(llm=ChatOpenAI(temperature=0, max_tokens=512, model_name=CHAT_MODEL))
 
 
 def get_service_context():

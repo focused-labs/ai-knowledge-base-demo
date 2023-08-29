@@ -4,20 +4,21 @@ import os
 import openai
 import pinecone
 from dotenv import load_dotenv
-from langchain import OpenAI, LLMChain, PromptTemplate
+from langchain import LLMChain, PromptTemplate
 from langchain.agents import ZeroShotAgent, Tool, initialize_agent, AgentType
 from langchain.chains import RetrievalQA
+from langchain.chat_models import ChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.memory import ConversationBufferMemory
 from langchain.vectorstores import Pinecone
 
-from config import PINECONE_INDEX, PINECONE_ENVIRONMENT, EMBEDDING_MODEL
+from config import PINECONE_INDEX, PINECONE_ENVIRONMENT, EMBEDDING_MODEL, CHAT_MODEL
 
 load_dotenv()
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 openai.api_key = OPENAI_API_KEY
 
-llm = OpenAI(temperature=0)
+llm = ChatOpenAI(temperature=0, model_name=CHAT_MODEL)
 
 
 def create_vector_db_tool():
@@ -46,17 +47,22 @@ def create_vector_db_tool():
     )
 
 
+def format_quotes_in_json(str):
+    return str.replace('"', '\\"').replace("\n", "\\n")
+
+
 def parse_source_docs(qa, query):
     result = qa({"question": query})
+    formatted_result_string = format_quotes_in_json(result["result"])
     if 'source_documents' in result.keys():
         return f"""
         {{
-        "result": "{result["result"]}",
+        "result": "{formatted_result_string}",
         "sources": {json.dumps([i.metadata for i in result['source_documents']])}
         }}"""
     return f"""
     {{
-    "result": "{result["result"]}",
+    "result": "{formatted_result_string}",
     "sources": []
     }}"""
 
