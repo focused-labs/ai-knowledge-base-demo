@@ -28,7 +28,7 @@ def query_agent(agent, user_input, personality="website visitor"):
             query=user_input,
             personality=personality,
         )
-        response = agent.run(input=elaborate_prompt)
+        response = agent.run(input=elaborate_prompt).replace("\n", "")
         if is_answer_formatted_in_json(response):
             return response
         return f"""
