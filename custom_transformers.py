@@ -1,11 +1,15 @@
 import re
+
+import nltk
 import openai
 import os
 from dotenv import load_dotenv
+from nltk import WordNetLemmatizer
 
 load_dotenv()
 openai.api_key = os.getenv('OPENAI_API_KEY')
-
+nltk.download('stopwords')
+nltk.download('wordnet')
 
 def remove_emoji(string):
     emoji_pattern = re.compile("["
@@ -85,5 +89,6 @@ def normalize_text(file_body_string):
     file_body_string = remove_emoji(file_body_string)
     file_body_string = replace_contractions(file_body_string)
     file_body_string = remove_punctuation(file_body_string)
-
-    return file_body_string
+    lem = WordNetLemmatizer()
+    text_stemmed = "".join([lem.lemmatize(y) for y in file_body_string])
+    return text_stemmed
