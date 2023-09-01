@@ -2,7 +2,7 @@ What does Focused Labs do?
 Tell me a brief history of Focused Labs.
 What type of work does Focused Labs excel at?
 What are Focused Labs company values?
-Tell me more about what listen first means?
+Tell me more about what the first value means?
 Tell me more about what learn why means?
 Tell me more about what love your craft means?
 Where is the Denver office located?
@@ -17,7 +17,7 @@ How many employees do you have?
 Who are the software engineers?
 As a potential employee, what programming languages should I know?
 What type of skills do you need to be a software engineer here?
-What languages are Focused labs developers good at?
+What programming languages are Focused labs developers good at?
 What does a typical day look like?
 What are your working hours?
 What does a typical team look like at Focused Labs?
@@ -51,3 +51,5 @@ How do I contact Focused Labs?
 Does Focused Labs know a lot about AI?
 Write me a haiku about Focused Labs
 If Focused Labs were an animal, what animal would it be?
+Hello my name is KB-tester?
+What is my name?

@@ -4,12 +4,12 @@ import os
 import openai
 import pinecone
 from dotenv import load_dotenv
-from langchain import LLMChain, PromptTemplate
-from langchain.agents import ZeroShotAgent, Tool, initialize_agent, AgentType
+from langchain import PromptTemplate
+from langchain.agents import ZeroShotAgent, Tool, ConversationalChatAgent, AgentExecutor
 from langchain.chains import RetrievalQA
 from langchain.chat_models import ChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
-from langchain.memory import ConversationBufferMemory
+from langchain.memory import ConversationSummaryBufferMemory
 from langchain.vectorstores import Pinecone
 
 from config import PINECONE_INDEX, PINECONE_ENVIRONMENT, EMBEDDING_MODEL, CHAT_MODEL
@@ -79,7 +79,7 @@ def create_agent_chain():
     ]
 
     prefix = """Have a conversation with a human, answering the following questions as best you can. You have access to the following tools:"""
-    suffix = """Begin!"
+    suffix = """Begin!
 
     {chat_history}
     Question: {input}
@@ -91,20 +91,18 @@ def create_agent_chain():
         suffix=suffix,
         input_variables=["input", "chat_history", "agent_scratchpad"],
     )
-    memory = ConversationBufferMemory(memory_key="chat_history")
-
-    llm_chain = LLMChain(llm=llm, prompt=prompt)
-
-    return initialize_agent(
-        tools,
-        llm,
-        agent=AgentType.CHAT_ZERO_SHOT_REACT_DESCRIPTION,
-        memory=memory,
-        verbose=True,
-        llm_chain=llm_chain,
-        max_iterations=3,
-        handle_parsing_errors=True,
-    )
+    memory = ConversationSummaryBufferMemory(llm=llm, memory_key="chat_history", return_messages=True,
+                                             human_prefix="user", ai_prefix="assistant")
+    custom_agent = ConversationalChatAgent.from_llm_and_tools(llm=llm,
+                                                              tools=tools,
+                                                              verbose=True,
+                                                              max_iterations=3,
+                                                              handle_parsing_errors=True,
+                                                              memory=memory,
+                                                              prompt=prompt
+                                                              )
+    return AgentExecutor.from_agent_and_tools(agent=custom_agent, tools=tools, memory=memory,
+                                              verbose=True)
 
 
 def get_prompt_template() -> PromptTemplate:
