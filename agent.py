@@ -1,117 +1,90 @@
 import json
-import os
 
-import openai
-import pinecone
-from dotenv import load_dotenv
 from langchain import PromptTemplate
 from langchain.agents import ZeroShotAgent, Tool, ConversationalChatAgent, AgentExecutor
 from langchain.chains import RetrievalQA
 from langchain.chat_models import ChatOpenAI
-from langchain.embeddings import OpenAIEmbeddings
 from langchain.memory import ConversationSummaryBufferMemory
-from langchain.vectorstores import Pinecone
 
-from config import PINECONE_INDEX, PINECONE_ENVIRONMENT, EMBEDDING_MODEL, CHAT_MODEL
-
-load_dotenv()
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-openai.api_key = OPENAI_API_KEY
-
-llm = ChatOpenAI(temperature=0, model_name=CHAT_MODEL)
+from config import CHAT_MODEL
+from tools.focused_labs_q_and_a_tool import create_vector_db_tool
+from utils import format_quotes_in_json, is_answer_formatted_in_json, output_response
 
 
-def create_vector_db_tool():
-    pinecone.init(
-        api_key=os.getenv('PINECONE_API_KEY'),
-        environment=PINECONE_ENVIRONMENT
-    )
-    text_field = "text"
+class Agent:
 
-    index = pinecone.Index(PINECONE_INDEX)
+    def __init__(self):
+        self.llm = ChatOpenAI(temperature=0, model_name=CHAT_MODEL)
+        self.agent_executor = self.create_agent_executor()
 
-    embedding_model = OpenAIEmbeddings(
-        model=EMBEDDING_MODEL,
-        openai_api_key=OPENAI_API_KEY
-    )
+    def create_agent_executor(self):
+        q_and_a_tool = create_vector_db_tool(llm=self.llm)
+        tools = [
+            Tool(
+                name="Focused Labs QA",
+                return_direct=True,
+                func=lambda query: _parse_source_docs(q_and_a_tool, query),
+                description="useful for when you need to answer questions about Focused Labs"
+            )
+        ]
 
-    vectorstore = Pinecone(
-        index, embedding_model.embed_query, text_field
-    )
-    return RetrievalQA.from_chain_type(
-        llm=llm,
-        chain_type="stuff",
-        return_source_documents=True,
-        input_key="question",
-        retriever=vectorstore.as_retriever(search_kwargs={"k": 3})
-    )
+        prefix = """Have a conversation with a human, answering the following questions as best you can. You have 
+        access to the following tools:"""
+        suffix = """Begin!
+    
+        {chat_history}
+        Question: {input}
+        {agent_scratchpad}"""
 
-
-def format_quotes_in_json(str):
-    return str.replace('"', '\\"').replace("\n", "\\n")
-
-
-def parse_source_docs(qa, query):
-    result = qa({"question": query})
-    formatted_result_string = format_quotes_in_json(result["result"])
-    if 'source_documents' in result.keys():
-        return f"""
-        {{
-        "result": "{formatted_result_string}",
-        "sources": {json.dumps([i.metadata for i in result['source_documents']])}
-        }}"""
-    return f"""
-    {{
-    "result": "{formatted_result_string}",
-    "sources": []
-    }}"""
-
-
-def create_agent_chain():
-    qa = create_vector_db_tool()
-    tools = [
-        Tool(
-            name="Focused Labs QA",
-            return_direct=True,
-            func=lambda query: parse_source_docs(qa, query),
-            description="useful for when you need to answer questions about Focused Labs"
+        prompt = ZeroShotAgent.create_prompt(
+            tools,
+            prefix=prefix,
+            suffix=suffix,
+            input_variables=["input", "chat_history", "agent_scratchpad"],
         )
-    ]
+        memory = ConversationSummaryBufferMemory(llm=self.llm, memory_key="chat_history", return_messages=True,
+                                                 human_prefix="user", ai_prefix="assistant")
+        custom_agent = ConversationalChatAgent.from_llm_and_tools(llm=self.llm,
+                                                                  tools=tools,
+                                                                  verbose=True,
+                                                                  max_iterations=3,
+                                                                  handle_parsing_errors=True,
+                                                                  memory=memory,
+                                                                  prompt=prompt
+                                                                  )
+        return AgentExecutor.from_agent_and_tools(agent=custom_agent, tools=tools, memory=memory,
+                                                  verbose=True)
 
-    prefix = """Have a conversation with a human, answering the following questions as best you can. You have access to the following tools:"""
-    suffix = """Begin!
+    def query_agent(self, user_input, personality="website visitor"):
+        try:
+            elaborate_prompt = get_prompt_template().format(
+                query=user_input,
+                personality=personality,
+            )
+            response = self.agent_executor.run(input=elaborate_prompt)
+            if is_answer_formatted_in_json(response):
+                return response
+            return f"""
+            {{
+                "result": "{response}",
+                "sources": "[]"
+            }}"""
 
-    {chat_history}
-    Question: {input}
-    {agent_scratchpad}"""
-
-    prompt = ZeroShotAgent.create_prompt(
-        tools,
-        prefix=prefix,
-        suffix=suffix,
-        input_variables=["input", "chat_history", "agent_scratchpad"],
-    )
-    memory = ConversationSummaryBufferMemory(llm=llm, memory_key="chat_history", return_messages=True,
-                                             human_prefix="user", ai_prefix="assistant")
-    custom_agent = ConversationalChatAgent.from_llm_and_tools(llm=llm,
-                                                              tools=tools,
-                                                              verbose=True,
-                                                              max_iterations=3,
-                                                              handle_parsing_errors=True,
-                                                              memory=memory,
-                                                              prompt=prompt
-                                                              )
-    return AgentExecutor.from_agent_and_tools(agent=custom_agent, tools=tools, memory=memory,
-                                              verbose=True)
+        except ValueError as e:
+            response = str(e)
+            response_prefix = "Could not parse LLM output: `\nAI: "
+            if not response.startswith(response_prefix):
+                raise e
+            response_suffix = "`"
+            if response.startswith(response_prefix):
+                response = response[len(response_prefix):]
+            if response.endswith(response_suffix):
+                response = response[:-len(response_suffix)]
+            output_response(response)
+            return response
 
 
 def get_prompt_template() -> PromptTemplate:
-    # TODO: Might want to tell the tool to always use the primary query engine to provide answers unless the question is about
-    # itself or if it is about what was previously said in the conversation.? Just an idea!
-
-    # Evaluate this question and see if it relates to Focused Labs. If so, answer this question with regards to
-    # Focused Labs: {query}
-    # If it does not relate to Focused Labs, then say "Hmm, I'm not sure."
     return PromptTemplate(
         template="""
                     You are a helpful virtual assistant for the employees of Focused Labs. 
@@ -130,3 +103,19 @@ def get_prompt_template() -> PromptTemplate:
                     """,
         input_variables=["query", "personality"],
     )
+
+
+def _parse_source_docs(q_and_a_tool: RetrievalQA, query: str):
+    result = q_and_a_tool({"question": query})
+    formatted_result_string = format_quotes_in_json(result["result"])
+    if 'source_documents' in result.keys():
+        return f"""
+            {{
+            "result": "{formatted_result_string}",
+            "sources": {json.dumps([i.metadata for i in result['source_documents']])}
+            }}"""
+    return f"""
+        {{
+        "result": "{formatted_result_string}",
+        "sources": []
+        }}"""

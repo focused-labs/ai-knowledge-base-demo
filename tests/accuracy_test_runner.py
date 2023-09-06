@@ -2,7 +2,7 @@ import sys
 from datetime import datetime
 
 from accuracy_test import accuracy_test
-from persistence import create_sheet_in_folder
+from logger import create_sheet_in_folder
 
 SHARED_FOLDER_ID = '1O2TcHSz8UhSSJoRzvP7QHhnSLVurY5cC'
 
@@ -25,7 +25,7 @@ def ask_questions(question_file_name, questions):
     for question in questions:
         try:
             if not question.strip().startswith('#'):
-                accuracy_test(sheet_id, 'Sheet1', question.strip())
+                accuracy_test(sheet_id, question.strip())
         except ValueError as e:
             print(f"Error when asking question {question.strip()}: str(e))")
 

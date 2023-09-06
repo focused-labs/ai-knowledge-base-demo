@@ -1,17 +1,28 @@
 import json
 
+from langchain.chat_models import ChatOpenAI
+
+from config import CHAT_MODEL
 from pinecone_database import get_pinecone_storage_context
-from llama_index import NotionPageReader, VectorStoreIndex, download_loader
+from llama_index import NotionPageReader, VectorStoreIndex, download_loader, LLMPredictor, ServiceContext
 import os
 from dotenv import load_dotenv
-from custom_transformers import normalize_text
-from utils import get_service_context
+from text_cleaner import normalize_text
 import http.client
 
 load_dotenv()
 NOTION_API_KEY = os.getenv('NOTION_API_KEY')
 
 page_titles = [{}]
+
+
+def get_llm_predictor():
+    return LLMPredictor(llm=ChatOpenAI(temperature=0, max_tokens=512, model_name=CHAT_MODEL))
+
+
+def get_service_context():
+    llm_predictor_chatgpt = get_llm_predictor()
+    return ServiceContext.from_defaults(llm_predictor=llm_predictor_chatgpt)
 
 
 def get_notion_metadata(page_id):

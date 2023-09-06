@@ -1,20 +1,19 @@
-import json
 import logging
-import os
 import sys
 from contextlib import asynccontextmanager
-from typing import Optional
-from uuid import uuid4, UUID
+from uuid import uuid4
 
 import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 
-from chat_engine import create_agent, query_agent
-from importer import import_web_scrape_data, import_notion_data
-from persistence import save_question, save_error
+from import_service import import_web_scrape_data, import_notion_data
+from models.imported_pages import ImportedPages
+from models.imported_urls import ImportedUrls
+from models.question import Question
+from models.session import Session
+from query_service import QueryService
 
 load_dotenv()
 
@@ -26,30 +25,13 @@ allowed_origins = [
     "https://chat.focusedlabs.io/"
 ]
 
-agents = {}
+query_service = QueryService()
 
 
 def init_logging():
     logging.basicConfig(stream=sys.stdout, level=logging.INFO)
     logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 
-
-class Question(BaseModel):
-    text: str
-    role: str
-    session_id: Optional[UUID]
-
-
-class ImportedPages(BaseModel):
-    page_ids: list
-
-
-class ImportedUrls(BaseModel):
-    page_urls: list
-
-
-class Session(BaseModel):
-    session_id: UUID
 
 
 personalities = {
@@ -107,31 +89,13 @@ async def root():
 
 @app.post("/query/")
 async def query(question: Question):
-    session_id = question.session_id
-    if session_id not in agents:
-        session_id = create_session()
-    personality = define_personality(question)
-    try:
-        answer = query_agent(agents[session_id], question.text, personality).replace("\n", "")
-        response_formatted = json.loads(answer)
-        save_question(session_id, question.text, response_formatted, os.getenv("GOOGLE_API_SPREADSHEET_ID"),
-                      os.getenv("GOOGLE_API_RANGE_NAME"))
-        return {"response": response_formatted, "session_id": session_id}
-    except Exception as e:
-        error = save_error(session_id, question.text, str(e), os.getenv("GOOGLE_API_SPREADSHEET_ID"), os.getenv("GOOGLE_API_RANGE_NAME"))
-        raise e
-
-
-def create_session():
-    session_id = uuid4()
-    agents[session_id] = create_agent()
-    return session_id
+    question.role = define_personality(question)
+    return query_service.query(question=question)
 
 
 @app.post("/delete_session")
 async def delete_session(session: Session):
-    if session.session_id in agents:
-        agents.pop(session.session_id)
+    query_service.delete_query_session(session)
 
 
 if __name__ == "__main__":

@@ -26,7 +26,7 @@ https://docs.google.com/spreadsheets/d/123/edit#gid=0
 the sheet id is 123
 ```
 
-- Copy `template.env` into a file at the root of the project named `.env`
+- Update `.env`
 
 ```
 OPENAI_API_KEY = "<retrieve value from 1password 'Special Projects or R&D' Vault - Open AI API Token Secure Note>"

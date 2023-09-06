@@ -39,10 +39,12 @@ def authenticate():
     return creds
 
 
-def save_question(session_id, question, answer, sheet_id, sheet_range):
+def save_question(question, answer, sheet_id=os.getenv("GOOGLE_API_SPREADSHEET_ID"),
+                  sheet_range=os.getenv("GOOGLE_API_RANGE_NAME"), session_id=""):
     try:
         creds = authenticate()
-        append_values(creds, sheet_id, sheet_range, "USER_ENTERED",
+        append_values(creds, sheet_id,
+                      sheet_range, "USER_ENTERED",
                       [
                           [
                               str(datetime.utcnow()),
@@ -56,10 +58,12 @@ def save_question(session_id, question, answer, sheet_id, sheet_range):
         print(f"Error returned from google authentication: {e}")
 
 
-def save_error(session_id, question, message, sheet_id, sheet_range):
+def save_error(question, message, sheet_id=os.getenv("GOOGLE_API_SPREADSHEET_ID"),
+               sheet_range=os.getenv("GOOGLE_API_RANGE_NAME"), session_id=""):
     try:
         creds = authenticate()
-        append_values(creds, sheet_id, sheet_range, "USER_ENTERED",
+        append_values(creds, sheet_id, sheet_range,
+                      "USER_ENTERED",
                       [
                           [
                               str(datetime.utcnow()),
