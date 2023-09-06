@@ -1,7 +1,6 @@
 import logging
 import sys
 from contextlib import asynccontextmanager
-from uuid import uuid4
 
 import uvicorn
 from dotenv import load_dotenv
@@ -35,7 +34,7 @@ def init_logging():
 
 
 personalities = {
-    "none": "website visitor",
+    "none": "human",
     "candidate": "potential employee",
     "client": "potential client",
     "customer": "potential customer"

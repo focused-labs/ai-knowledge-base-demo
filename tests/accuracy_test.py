@@ -5,7 +5,7 @@ from logger import save_question, save_error
 
 
 def accuracy_test(spreadsheet_id, question):
-    agent = Agent()
+    agent = Agent(personality="human")
     try:
         answer = agent.query_agent(question)
         response_formatted = json.loads(answer)

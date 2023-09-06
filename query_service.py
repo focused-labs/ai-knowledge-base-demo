@@ -13,18 +13,18 @@ class QueryService:
     def __init__(self):
         self.agents = {}
 
-    def _create_query_session(self):
+    def _create_query_session(self, personality):
         session_id = uuid4()
-        self.agents[session_id] = Agent()
+        self.agents[session_id] = Agent(personality=personality)
         return session_id
 
     def query(self, question: Question):
         session_id = question.session_id
         if session_id not in self.agents:
-            session_id = self._create_query_session()
+            session_id = self._create_query_session(personality=question.role)
         try:
             agent = self.agents[session_id]
-            answer = agent.query_agent(user_input=question.text, personality=question.role)
+            answer = agent.query_agent(user_input=question.text)
             response_formatted = json.loads(answer)
             save_question(session_id, question.text, response_formatted)
             return {"response": response_formatted, "session_id": session_id}
