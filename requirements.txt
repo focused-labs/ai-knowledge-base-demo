@@ -18,4 +18,3 @@ google-api-python-client
 google-auth-httplib2
 google-auth-oauthlib
 google~=3.0.0
-nltk==3.5

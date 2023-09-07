@@ -1,15 +1,12 @@
+import os
 import re
 
-import nltk
 import openai
-import os
 from dotenv import load_dotenv
-from nltk import WordNetLemmatizer
 
 load_dotenv()
 openai.api_key = os.getenv('OPENAI_API_KEY')
-nltk.download('stopwords')
-nltk.download('wordnet')
+
 
 def remove_emoji(string):
     emoji_pattern = re.compile("["
@@ -23,8 +20,8 @@ def remove_emoji(string):
     return emoji_pattern.sub(r'', string)
 
 
-def remove_punctuation(string):
-    puncts = ['\u200d', '?', '....', '..', '...', '', '#', '"', '|', "'",
+def remove_specific_characters(string):
+    puncts = ['\u200d', '?', '....', '..', '...', '#', '"', '|', "'",
               '[', ']', '>', '=', '*', '+', '\\',
               '•', '~', '£', '·', '_', '{', '}', '©', '^', '®', '`', '<', '→', '°', '€', '™', '›', '♥', '←', '×', '§',
               '″', '′', 'Â', '█',
@@ -85,10 +82,8 @@ def replace_contractions(string):
     return string
 
 
-def normalize_text(file_body_string):
-    file_body_string = remove_emoji(file_body_string)
-    file_body_string = replace_contractions(file_body_string)
-    file_body_string = remove_punctuation(file_body_string)
-    lem = WordNetLemmatizer()
-    text_stemmed = "".join([lem.lemmatize(y) for y in file_body_string])
-    return text_stemmed
+def normalize_text(text):
+    text = remove_emoji(text)
+    text = replace_contractions(text)
+    text = remove_specific_characters(text)
+    return text

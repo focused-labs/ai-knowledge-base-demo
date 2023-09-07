@@ -43,6 +43,7 @@ def save_question(question, answer, sheet_id=os.getenv("GOOGLE_API_SPREADSHEET_I
                   sheet_range=os.getenv("GOOGLE_API_RANGE_NAME"), session_id=""):
     try:
         creds = authenticate()
+        sources = "\n".join([i['URL'] for i in answer["sources"]]) if len(answer["sources"]) > 0 else ""
         append_values(creds, sheet_id,
                       sheet_range, "USER_ENTERED",
                       [
@@ -51,7 +52,7 @@ def save_question(question, answer, sheet_id=os.getenv("GOOGLE_API_SPREADSHEET_I
                               str(session_id),
                               question,
                               answer["result"],
-                              "\n".join([i['URL'] for i in answer["sources"]])
+                              sources
                           ]
                       ])
     except Exception as e:

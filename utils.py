@@ -1,10 +1,5 @@
 import json
 
-from langchain.chat_models import ChatOpenAI
-from llama_index import LLMPredictor, ServiceContext
-
-from config import CHAT_MODEL
-
 
 def output_response(response) -> None:
     """
@@ -26,7 +21,7 @@ def output_response(response) -> None:
 
 def is_answer_formatted_in_json(answer):
     try:
-        json.loads(answer)
+        json.loads(answer, strict=False)
         return True
     except ValueError as e:
         return False

@@ -2,7 +2,7 @@ What does Focused Labs do?
 Tell me a brief history of Focused Labs.
 What type of work does Focused Labs excel at?
 What are Focused Labs company values?
-Tell me more about what the first value means?
+Tell me more about what listen first means?
 Tell me more about what learn why means?
 Tell me more about what love your craft means?
 Where is the Denver office located?
@@ -49,7 +49,5 @@ As a prospective employee, do I have to always pair program?
 Why do you have an AI chatbot?
 How do I contact Focused Labs?
 Does Focused Labs know a lot about AI?
-Write me a haiku about Focused Labs
+Write me a haiku about Focused Labs?
 If Focused Labs were an animal, what animal would it be?
-Hello my name is KB-tester?
-What is my name?

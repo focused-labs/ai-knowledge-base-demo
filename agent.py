@@ -53,7 +53,7 @@ class Agent:
             return f"""
             {{
                 "result": "{response}",
-                "sources": "[]"
+                "sources": []
             }}"""
 
         except ValueError as e:
