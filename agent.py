@@ -37,10 +37,16 @@ class Agent:
                                                                   memory=memory,
                                                                   input_variables=["input", "chat_history",
                                                                                    "agent_scratchpad"],
-                                                                  system_message=f"""You are a helpful assistant for the
-                                                                                  software consulting company of Focused 
-                                                                                  Labs. Answer questions from the 
-                                                                                  perspective of a {self.personality}"""
+                                                                  system_message=
+                                                                  f"""
+                                                                  Have a conversation with a human, answering the 
+                                                                  following as best you can and try to use a tool to help. 
+                                                                  You have access to the following tools: 
+                                                                  Focused Labs QA-useful for when you need to answer
+                                                                  questions about Focused Labs. If you don't know the 
+                                                                  answer don't make one up, just say "Hmm, I'm not sure 
+                                                                  please contact work@focusedlabs.io for further assistance."
+                                                                  Answer questions from the perspective of a {self.personality}"""
                                                                   )
         return AgentExecutor.from_agent_and_tools(agent=custom_agent, tools=tools, memory=memory,
                                                   verbose=True)
