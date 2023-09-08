@@ -26,7 +26,7 @@ class QueryService:
             agent = self.agents[session_id]
             answer = agent.query_agent(user_input=question.text)
             response_formatted = json.loads(answer, strict=False)
-            save_question(session_id, question.text, response_formatted)
+            save_question(session_id=session_id, question=question.text, answer=response_formatted)
             return {"response": response_formatted, "session_id": session_id}
         except Exception as e:
             error = save_error(session_id, question.text, str(e), os.getenv("GOOGLE_API_SPREADSHEET_ID"),
