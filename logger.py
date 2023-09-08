@@ -82,7 +82,7 @@ def save_error(question, message, sheet_id=os.getenv("GOOGLE_API_SPREADSHEET_ID"
 def create_sheet_in_folder(sheet_name, folder_id, sheet_range=None, sheet_data=None):
     creds = authenticate()
 
-    drive_service = build('drive', 'v3', credentials=creds)
+    drive_service = build('drive', 'v3', credentials=creds, cache_discovery=False)
 
     file_metadata = {
         'name': sheet_name,
