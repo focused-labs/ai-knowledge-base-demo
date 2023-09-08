@@ -101,7 +101,7 @@ def create_sheet_in_folder(sheet_name, folder_id, sheet_range=None, sheet_data=N
 
 def append_values(creds, sheet_id, range_name, value_input_option, values):
     try:
-        sheet_service = build('sheets', 'v4', credentials=creds)
+        sheet_service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
 
         body = {
             'values': values
