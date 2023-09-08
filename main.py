@@ -33,23 +33,6 @@ def init_logging():
 
 
 
-personalities = {
-    "none": "human",
-    "candidate": "potential employee",
-    "client": "potential client",
-    "customer": "potential customer"
-}
-
-
-def define_personality(question: Question):
-    if question.role is None:
-        question.role = "none"
-    personality = personalities[question.role]
-    if personality is None:
-        personality = personalities["none"]
-    return personality
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_logging()
@@ -88,7 +71,6 @@ async def root():
 
 @app.post("/query/")
 async def query(question: Question):
-    question.role = define_personality(question)
     return query_service.query(question=question)
 
 
