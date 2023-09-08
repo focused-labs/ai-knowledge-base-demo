@@ -1,5 +1,3 @@
-import json
-
 from langchain.agents import Tool, ConversationalChatAgent, AgentExecutor
 from langchain.chains import RetrievalQA
 from langchain.chat_models import ChatOpenAI
@@ -7,7 +5,7 @@ from langchain.memory import ConversationBufferWindowMemory
 
 from config import CHAT_MODEL
 from tools.focused_labs_q_and_a_tool import create_vector_db_tool
-from utils import format_quotes_in_json, is_answer_formatted_in_json, output_response
+from utils import is_answer_formatted_in_json, output_response, transform_source_docs
 
 
 class Agent:
@@ -78,15 +76,4 @@ class Agent:
 
 def _parse_source_docs(q_and_a_tool: RetrievalQA, query: str):
     result = q_and_a_tool({"question": query})
-    formatted_result_string = format_quotes_in_json(result["result"])
-    if 'source_documents' in result.keys():
-        return f"""
-            {{
-            "result": "{formatted_result_string}",
-            "sources": {json.dumps([i.metadata for i in result['source_documents']])}
-            }}"""
-    return f"""
-        {{
-        "result": "{formatted_result_string}",
-        "sources": []
-        }}"""
+    return transform_source_docs(result)

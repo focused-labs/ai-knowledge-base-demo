@@ -29,3 +29,18 @@ def is_answer_formatted_in_json(answer):
 
 def format_quotes_in_json(str):
     return str.replace('"', '\\"').replace("\n", "\\n")
+
+
+def transform_source_docs(result):
+    formatted_result_string = format_quotes_in_json(result["result"])
+    if 'source_documents' in result.keys():
+        return f"""
+            {{
+            "result": "{formatted_result_string}",
+            "sources": {json.dumps([i.metadata for i in result['source_documents']])}
+            }}"""
+    return f"""
+        {{
+        "result": "{formatted_result_string}",
+        "sources": []
+        }}"""
