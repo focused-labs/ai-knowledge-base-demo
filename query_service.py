@@ -27,17 +27,20 @@ class QueryService:
             agent = self.agents[session_id]
             answer = agent.query_agent(user_input=question.text)
             response_formatted = json.loads(answer, strict=False)
-            conversation_repository.create_conversation(
-                db=next(get_db()),
-                conversation=Conversation(session_id=session_id, question=question.text, created_at=datetime.now(),
-                                          response=response_formatted['result']))
-            return {"response": response_formatted, "session_id": session_id}
         except Exception as e:
             conversation_repository.create_conversation(
                 db=next(get_db()),
                 conversation=Conversation(session_id=session_id, question=question.text, created_at=datetime.now(),
                                           response="", error_message=str(e)))
             raise e
+        try:
+            conversation_repository.create_conversation(
+                db=next(get_db()),
+                conversation=Conversation(session_id=session_id, question=question.text, created_at=datetime.now(),
+                                          response=response_formatted['result']))
+        except Exception as e:
+            print(f"Failed to log response. Error: {e}")
+        return {"response": response_formatted, "session_id": session_id}
 
     def delete_query_session(self, session: Session):
         if session.session_id in self.agents:
