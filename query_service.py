@@ -1,11 +1,12 @@
+from datetime import datetime
 import json
-import os
 from uuid import uuid4
-
+import conversation_repository
 from agent import Agent
+from database import get_db
+from models.conversation import Conversation
 from models.question import Question
 from models.session import Session
-from logger import save_question, save_error
 
 
 class QueryService:
@@ -26,11 +27,16 @@ class QueryService:
             agent = self.agents[session_id]
             answer = agent.query_agent(user_input=question.text)
             response_formatted = json.loads(answer, strict=False)
-            save_question(session_id=session_id, question=question.text, answer=response_formatted)
+            conversation_repository.create_conversation(
+                db=next(get_db()),
+                conversation=Conversation(session_id=session_id, question=question.text, created_at=datetime.now(),
+                                          response=response_formatted['result']))
             return {"response": response_formatted, "session_id": session_id}
         except Exception as e:
-            error = save_error(session_id, question.text, str(e), os.getenv("GOOGLE_API_SPREADSHEET_ID"),
-                               os.getenv("GOOGLE_API_RANGE_NAME"))
+            conversation_repository.create_conversation(
+                db=next(get_db()),
+                conversation=Conversation(session_id=session_id, question=question.text, created_at=datetime.now(),
+                                          response="", error_message=str(e)))
             raise e
 
     def delete_query_session(self, session: Session):
