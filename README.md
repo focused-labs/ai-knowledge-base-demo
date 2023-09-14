@@ -1,54 +1,64 @@
-# Focused Labs Knowledge Hub
+# Focused Labs Knowledge Base Demo · https://chat.withfocus.com/
 
-This a starter repo that builds a basic Knowledge Hub and then uses FastAPI to expose it to a UI.
+This sample project demonstrates a possible implementation of a domain specific AI Knowledge Base using Focused Labs as
+the example.
 
-## Getting this running...
+The UI (frontend code) lives in [this repository](https://github.com/focused-labs/knowledge-base-demo-ui).
 
-### Logging
+## Why?
 
-- The python logs can be viewed in production on the Digital Ocean `Apps` > `Runtime Logs` tab, or on the console when
-  running locally.
-- For user questions and answers, since we don't have a database (yet) we spun up a simple solution using the Google
-  Sheets API
-- A sheet in production logs all questions, answers, sources and error messages.
-- On your local machine, you should create your own google sheet for logging following the instructions for `.env`
-  below.
+#### Why build this? Why does this matter?
 
-### Create `.env` file
+- AI driven solutions will empower organizations to build on top of existing infrastructure and unlock legacy
+- Customized AI ChatBots accelerate product development by making disparate and complex information easy to find
+- Unblock teams to focus on what matters - building working software - rather than chasing down people and documentation
 
-- Ask a teammate for the URL of the google sheet `Chat History` in prod
-- From the File menu, choose `Make a Copy`. Locate the copy in `My Drive`. (only you have access)
-- Keeping the header row, clear all the data from your local sheet
-- Locate the sheet id from the URL of your local sheet, for example for URL
+## What?
+
+#### What is in this repository?
+
+A python codebase that harnesses the power of semantic vector search fueled by advanced LLMs.
+
+** INSERT ARCHITECTURE DIAGRAM HERE **
+
+### Data Inputs:
+
+1. Our external Notion wiki
+2. Our public website: [Focused Labs](https://focusedlabs.io/)
+
+## Prerequisites
+
+1. A Pinecone Vector Database. You can create a free account [at Pinecone's website](https://www.pinecone.io/).
+2. A Open AI API account (api key). You can sign up [at Open AI's website](https://platform.openai.com/signup).
+3. Python (and your favorite IDE). We are using python v3.10.7.
+4. (Optional) Notion API Key.
+
+
+## Getting the demo running...
+
+### Edit Configuration Files
+
+#### Update `.env`
 
 ```
-https://docs.google.com/spreadsheets/d/123/edit#gid=0
-the sheet id is 123
+OPENAI_API_KEY = "<Open AI API Token Secure Note>"
+NOTION_API_KEY = "<Notion API Token Secure Note>"
+PINECONE_API_KEY = "<retrieve value Pinecone DB DEV credential>"
 ```
 
-- Update `.env`
+#### Update `config.py`
 
 ```
-OPENAI_API_KEY = "<retrieve value from 1password 'Special Projects or R&D' Vault - Open AI API Token Secure Note>"
-NOTION_API_KEY = "<retrieve value from 1password 'Special Projects or R&D' Vault - Notion API Token Secure Note>"
-GITHUB_TOKEN = "<set up your own github account using your focusedlabs email, and create a token>"
-PINECONE_API_KEY = "<retrieve value from 1password 'Special Projects or R&D' Vault - Pinecone DB DEV credential>"
-GOOGLE_API_SPREADSHEET_ID = 'your local spreadsheet id'
-GOOGLE_API_RANGE_NAME = 'Sheet1'
-GOOGLE_CREDS_TOKEN = '<get this from 1password>'
+PINECONE_INDEX = "<name of your index, ex: "focusedlabs-pinecone-index">"
+PINECONE_ENVIRONMENT = "<name of your pineconce env. ex: asia-southeast1-gcp-free>"
 ```
 
-- Copy in values from the local sheet id as explained above, and from 1password in the `Special Projects` vault for the
-  google values.
-
-### Pinecone Dashboard Access
-
-To view the Pinecone Database dashboard, create an account with Pinecone. Then, ask a teammate to add you to the Focused
+(Optional) You can explore other models. We recommend using the current configuration for best results.Then, ask a teammate to add you to the Focused
 Labs Knowledge Base Hub project.
 
-### Start the API
+### The API
 
-Run
+#### Run
 
 ```
  uvicorn main:app
@@ -56,24 +66,56 @@ Run
 
 Add `--reload` if you make a code change the app will restart on its own.
 
+#### Endpoints
+
+```
+1. Endpoint: /
+   Description: A simple endpoint that returns a "Hello World" message.
+   Method: GET
+   
+   
+2. Endpoint: /load-notion-docs
+   Description: Loads documents from Notion based on provided Notion page IDs.
+   Method: POST
+   Payload: json
+       {
+         "page_ids": ["<NOTION_PAGE_ID_1>", "<NOTION_PAGE_ID_2>", ...]
+       }
+   
+3. Endpoint: /load-website-docs
+   Description: Loads documents based on provided URLs that are web scraped.
+   Method: POST
+   Payload: json
+       {
+         "page_urls": ["<URL_1>", "<URL_2>", ...]
+       }
+   
+4. Endpoint: /query/
+   Description: Accepts a question and role and returns the appropriate query result.
+   Method: POST
+   Payload: json
+        {
+          "text": "<user question here>",
+          "role": "<user persona, ex: potential customer>"
+        }
+   Description: Accepts a question and returns the appropriate query result.
+   
+5. Endpoint: /delete_session
+   Description: Deletes a conversation based on the provided session ID.
+   Method: POST
+   Payload: json
+       {
+         "session_id": "<YOUR_SESSION_ID>"
+       }
+   
+```
+
 ### Run accuracy test
+
 Cannot be run via command line.
 
 Edit the run configuration for `accuracy_test_runner.py` and add the file that contains the list of questions you want
 to ask. Ex: `questions.txt`
 
-#### References for now
 
-https://platform.openai.com/docs/tutorials/web-qa-embeddings
 
-##   
-
-If you need to change the permissions of the google api credentials for whatever reason, then you will need to
-regenerate a new token.
-
-1. You will need run the code locally, without any existing valid credentials. This should force the code to initiate a
-   manual browser login and verification.
-2. Add `service_account_credentials.json` file to your local file system. You can find this in 1pass.
-3. Run `accuracy_test_runner.py`
-4. You will then need to take the token that is generated (printed in console) and
-   update the `GOOGLE_CREDS_TOKEN` environment variable.
