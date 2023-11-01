@@ -12,6 +12,7 @@ load_dotenv()
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 openai.api_key = OPENAI_API_KEY
 
+
 def create_vector_db_tool(llm: ChatOpenAI):
     pinecone.init(
         api_key=os.getenv('PINECONE_API_KEY'),
