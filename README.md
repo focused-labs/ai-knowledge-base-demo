@@ -19,7 +19,7 @@ The UI (frontend code) lives in [this repository](https://github.com/focused-lab
 
 A python codebase that harnesses the power of semantic vector search fueled by advanced LLMs.
 
-** INSERT ARCHITECTURE DIAGRAM HERE **
+![Overview](ArchitectureOverview.png)
 
 ### Data Inputs:
 
