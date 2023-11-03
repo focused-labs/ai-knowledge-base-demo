@@ -1,5 +1,22 @@
 # Focused Labs Knowledge Base Demo · https://chat.withfocus.com/
 
+## Table of Contents
+1. [Focused Labs Knowledge Base Demo](#focused-labs-knowledge-base-demo--httpschatwithfocuscom)
+2. [Why?](#why)
+    - [Why build this? Why does this matter?](#why-build-this-why-does-this-matter)
+3. [What?](#what)
+    - [What is in this repository?](#what-is-in-this-repository)
+    - [Data Inputs](#data-inputs)
+4. [Prerequisites](#prerequisites)
+5. [Getting the demo running...](#getting-the-demo-running)
+    - [Edit Configuration Files](#edit-configuration-files)
+        - [Update `.env`](#update-env)
+        - [Update `config.py`](#update-configpy)
+    - [The API](#the-api)
+        - [Run](#run)
+        - [Endpoints](#endpoints)
+    - [Run accuracy test](#run-accuracy-test)
+
 This sample project demonstrates a possible implementation of a domain specific AI Knowledge Base using Focused Labs as
 the example.
 
