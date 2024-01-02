@@ -10,8 +10,8 @@ from utils import is_answer_formatted_in_json, output_response, transform_source
 
 class Agent:
 
-    def __init__(self, personality):
-        self.personality = personality
+    def __init__(self, role):
+        self.role = role
         self.llm = ChatOpenAI(temperature=0, model_name=CHAT_MODEL)
         self.agent_executor = self.create_agent_executor()
 
@@ -44,7 +44,7 @@ class Agent:
                                                                   questions about Focused Labs. If you don't know the 
                                                                   answer don't make one up, just say "Hmm, I'm not sure 
                                                                   please contact work@focusedlabs.io for further assistance."
-                                                                  Answer questions from the perspective of a {self.personality}"""
+                                                                  Answer questions from the perspective of a {self.role}"""
                                                                   )
         return AgentExecutor.from_agent_and_tools(agent=custom_agent, tools=tools, memory=memory,
                                                   verbose=True)

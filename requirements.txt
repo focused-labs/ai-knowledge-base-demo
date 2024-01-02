@@ -1,12 +1,10 @@
-openai==0.27.1
-redis==4.5.1
+openai
 requests==2.28.2
 termcolor==2.2.0
 jupyter
 ipykernel
 textract
-llama-index==0.6.24
-langchain==0.0.239
+langchain==0.0.352
 python-dotenv==1.0.0
 httpx
 fastapi~=0.98.0

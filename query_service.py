@@ -1,47 +1,52 @@
 from datetime import datetime
-import json
 from uuid import uuid4
+
 import conversation_repository
-from agent import Agent
+from chain import Chain
 from database import get_db
 from models.conversation import Conversation
 from models.question import Question
 from models.session import Session
+from pinecone_manager import PineconeManager
 
 
 class QueryService:
 
     def __init__(self):
-        self.agents = {}
-
-    def _create_query_session(self, personality):
-        session_id = uuid4()
-        self.agents[session_id] = Agent(personality=personality)
-        return session_id
+        self.vectorstore_manager = PineconeManager()
+        self.chain = Chain(vector_store=self.vectorstore_manager.vectorstore)
 
     def query(self, question: Question):
-        session_id = question.session_id
-        if session_id not in self.agents:
-            session_id = self._create_query_session(personality=question.role)
+        if not question.session_id:
+            question.session_id = uuid4()
         try:
-            agent = self.agents[session_id]
-            answer = agent.query_agent(user_input=question.text)
-            response_formatted = json.loads(answer, strict=False)
-        except Exception as e:
+            result = self.chain.complete_chain.invoke(
+                {"question": question.text, "session_id": question.session_id, "role": question.role})
+            answer = result["answer"].content
+            self.chain.save_memory(question.text, answer, str(question.session_id))
+            sources = []
+            for doc in result["docs"]:
+                source_url = doc.metadata['URL']
+                sources.append({"URL": source_url})
+
+            response_formatted = {"result": answer, "sources": sources}
+
             conversation_repository.create_conversation(
                 db=next(get_db()),
-                conversation=Conversation(session_id=session_id, question=question.text, created_at=datetime.now(),
-                                          response="", error_message=str(e)))
-            raise e
-        try:
-            conversation_repository.create_conversation(
-                db=next(get_db()),
-                conversation=Conversation(session_id=session_id, question=question.text, created_at=datetime.now(),
+                conversation=Conversation(session_id=question.session_id, question=question.text,
+                                          created_at=datetime.now(),
                                           response=response_formatted['result']))
         except Exception as e:
-            print(f"Failed to log response. Error: {e}")
-        return {"response": response_formatted, "session_id": session_id}
+            conversation_repository.create_conversation(
+                db=next(get_db()),
+                conversation=Conversation(session_id=question.session_id, question=question.text,
+                                          created_at=datetime.now(),
+                                          response="", error_message=str(e)))
+            print(f"Failed to execute query or log response. Error: {e}")
+            raise e
+
+        return {"response": response_formatted, "session_id": question.session_id}
 
     def delete_query_session(self, session: Session):
-        if session.session_id in self.agents:
-            self.agents.pop(session.session_id)
+        # TODO: Not yet implemented
+        return
