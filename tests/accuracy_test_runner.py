@@ -1,5 +1,9 @@
+import os
 import sys
 from datetime import datetime
+
+import openai
+from dotenv import load_dotenv
 
 from accuracy_test import accuracy_test
 from logger import create_sheet_in_folder
@@ -31,6 +35,7 @@ def ask_questions(question_file_name, questions):
 
 
 if __name__ == "__main__":
-    question_file = open(sys.argv[1], 'r')
+
+    question_file = open("questions.txt", 'r')
     questions = question_file.readlines()
     ask_questions(question_file.name, questions)

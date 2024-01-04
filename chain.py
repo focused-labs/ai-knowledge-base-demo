@@ -1,14 +1,20 @@
+import os
 from operator import itemgetter
 
+import openai
+from dotenv import load_dotenv
 from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
 from langchain.schema import format_document
 from langchain_core.messages import get_buffer_string
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate, ChatPromptTemplate
-from langchain_core.runnables import RunnableLambda, RunnablePassthrough, RunnableParallel
+from langchain_core.runnables import RunnableLambda, RunnablePassthrough
 
 import config
+
+load_dotenv()
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 llm = ChatOpenAI(temperature=0, model=config.CHAT_MODEL)
 condense_question_prompt = """Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question, in its original language.
