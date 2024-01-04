@@ -6,7 +6,7 @@ from langchain.schema import format_document
 from langchain_core.messages import get_buffer_string
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate, ChatPromptTemplate
-from langchain_core.runnables import RunnableLambda, RunnablePassthrough
+from langchain_core.runnables import RunnableLambda, RunnablePassthrough, RunnableParallel
 
 import config
 
@@ -21,10 +21,10 @@ CONDENSE_QUESTION_PROMPT = PromptTemplate.from_template(condense_question_prompt
 
 DEFAULT_DOCUMENT_PROMPT = PromptTemplate.from_template(template="{page_content}")
 
-SYSTEM_PROMPT = """Have a conversation with a human. Answer the question from the perspective of a {role}.
+SYSTEM_PROMPT = """Have a conversation with a human. Answer the question with a {role} accent.
 If you don't know the answer don't make one up, just say "Hmm, I'm not sure please contact 
 work@focusedlabs.io for further assistance."  """
-answer_prompt_base = """Answer the question based on the following context:
+answer_prompt_base = """Answer the question based only on the following context:
 {context}
 
 Question: {question}
@@ -57,7 +57,6 @@ def get_role(x):
 def load_memory_chain():
     return RunnablePassthrough.assign(
         chat_history=RunnableLambda(_get_loaded_memory) | itemgetter("history"),
-        role=RunnableLambda(get_role)
     )
 
 
@@ -70,7 +69,8 @@ def create_question_chain():
                                | CONDENSE_QUESTION_PROMPT
                                | llm
                                | StrOutputParser(),
-        "role": itemgetter("role")
+        "role": itemgetter("role"),
+        "chat_history": lambda x: get_buffer_string(x["chat_history"]),
     }
 
 
@@ -80,6 +80,8 @@ def retrieve_documents_chain(vector_store):
         "role": itemgetter("role"),
         "docs": itemgetter("standalone_question") | retriever,
         "question": lambda x: x["standalone_question"],
+        "standalone_question": itemgetter("standalone_question"),
+        "chat_history": itemgetter("chat_history")
     }
 
 
@@ -87,11 +89,15 @@ def create_answer_chain():
     final_inputs = {
         "role": itemgetter("role"),
         "context": lambda x: combine_documents(x["docs"], DEFAULT_DOCUMENT_PROMPT),
-        "question": itemgetter("question")
+        "question": itemgetter("question"),
+        "standalone_question": itemgetter("standalone_question"),
+        "chat_history": itemgetter("chat_history")
     }
     return {
         "answer": final_inputs | ANSWER_PROMPT | llm,
-        "docs": itemgetter("docs")
+        "docs": itemgetter("docs"),
+        "standalone_question": itemgetter("standalone_question"),
+        "chat_history": itemgetter("chat_history")
     }
 
 

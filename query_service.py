@@ -18,12 +18,16 @@ class QueryService:
 
     def query(self, question: Question):
         if not question.session_id:
-            question.session_id = uuid4()
+            question.session_id = str(uuid4())
         try:
             result = self.chain.complete_chain.invoke(
                 {"question": question.text, "session_id": question.session_id, "role": question.role})
             answer = result["answer"].content
             self.chain.save_memory(question.text, answer, str(question.session_id))
+
+            print("Chat History: \n", result["chat_history"], "\n\n")
+            print("Standalone Question: \n", result["standalone_question"], "\n\n")
+
             sources = []
             for doc in result["docs"]:
                 source_url = doc.metadata['URL']
